@@ -7,6 +7,7 @@ from __future__ import division
 from __future__ import print_function
 
 from modules import * 
+from functools import reduce
 
 class MLP(object):
   """
@@ -36,7 +37,36 @@ class MLP(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    # Check there is at least one node in the input layer
+    if n_inputs < 1:
+        raise ValueError(
+            "Number of units in the input layer is incorrect. There should be at least one unit.")
+
+    # Check there is at least one node in each of the hidden layers.
+    # Using `any` instead of all to speed up the check by using short circuit evaluation.
+    if len(n_hidden) > 0 and any(n_layer < 0 for n_layer in n_hidden):
+        raise ValueError(
+            "Number of units in one of the hidden layer is incorrect. There should be at least one unit.")
+
+    # Check there is at least one node in the output layer
+    if n_classes < 1:
+        raise ValueError(
+            "Number of units in the output layer is incorrect. There should be at least one unit.")
+
+    # Create list with sizes of all the layers.
+    sizes = [n_inputs] + n_hidden + [n_classes]
+
+    self.layers = []
+    # Go over all the layers, excluding the last one
+    for idx in range(len(sizes) - 1):
+        input_size, output_size = sizes[idx], sizes[idx + 1]
+        self.layers.append(LinearModule(input_size, output_size))
+
+        # avoid adding ReLU activation in the very end, instead add softmax
+        if idx < len(sizes) - 2:
+            self.layers.append(ReLUModule())
+        else:
+            self.layers.append(SoftMaxModule())
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -58,7 +88,7 @@ class MLP(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = reduce(lambda res, f: f.forward(res), self.layers, x)
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -79,7 +109,7 @@ class MLP(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    reduce(lambda res, f: f.backward(res), self.layers[::-1], dout)
     ########################
     # END OF YOUR CODE    #
     #######################

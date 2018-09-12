@@ -28,7 +28,9 @@ class LinearModule(object):
     #######################
     self.params = {'weight': None, 'bias': None}
     self.grads = {'weight': None, 'bias': None}
-    raise NotImplementedError
+    
+    self.params['weight'] = np.random.normal(loc=10, scale=0.0001, size=(out_features, in_features))
+    self.params['bias'] = np.zeros(shape=out_features)
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -51,7 +53,9 @@ class LinearModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = x @ self.params['weight'].T + self.params['bias'][None, :]
+    self.x = x
+
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -75,7 +79,9 @@ class LinearModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    dx = dout @ self.params['weight']
+    self.grads['weight'] = dout.T @ self.x
+    self.grads['bias'] = np.sum(dout, axis=0)
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -221,7 +227,7 @@ class CrossEntropyModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    out = np.mean(np.sum(-y * np.log(x), axis=1))
+    out = np.mean(np.sum(-y * np.log(np.clip(x, a_min=1e-25, a_max=None)), axis=1))
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -246,7 +252,7 @@ class CrossEntropyModule(object):
     # PUT YOUR CODE HERE  #
     #######################
     batch_size = x.shape[0]
-    dx = (-y * 1/x) / batch_size
+    dx = (-y/np.clip(x, a_min=1e-25, a_max=None)) / batch_size
     ########################
     # END OF YOUR CODE    #
     #######################

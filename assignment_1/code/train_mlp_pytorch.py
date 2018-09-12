@@ -254,7 +254,6 @@ def train():
   # END OF YOUR CODE    #
   #######################
 
-
 def print_flags():
   """
   Prints all entries in FLAGS variable.

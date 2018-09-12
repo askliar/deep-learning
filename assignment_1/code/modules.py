@@ -227,7 +227,11 @@ class CrossEntropyModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
+<<<<<<< HEAD
     out = np.mean(np.sum(-y * np.log(np.clip(x, a_min=1e-25, a_max=None)), axis=1))
+=======
+    out = np.mean(np.sum(-y * np.log(x), axis=1))
+>>>>>>> start numpy implementation;
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -252,7 +256,11 @@ class CrossEntropyModule(object):
     # PUT YOUR CODE HERE  #
     #######################
     batch_size = x.shape[0]
+<<<<<<< HEAD
     dx = (-y * 1/np.clip(x, a_min=1e-25, a_max=None)) / batch_size
+=======
+    dx = (-y * 1/x) / batch_size
+>>>>>>> start numpy implementation;
     ########################
     # END OF YOUR CODE    #
     #######################

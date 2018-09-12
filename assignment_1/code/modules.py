@@ -104,7 +104,9 @@ class ReLUModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = np.maximum(x, 0)
+
+    self.x = out
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -116,7 +118,7 @@ class ReLUModule(object):
     Backward pass.
 
     Args:
-      dout: gradients of the previous modul
+      dout: gradients of the previous module
     Returns:
       dx: gradients with respect to the input of the module
     
@@ -127,7 +129,9 @@ class ReLUModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+
+    dx = dout * (self.x > 0)
+
     ########################
     # END OF YOUR CODE    #
     #######################    
@@ -156,7 +160,11 @@ class SoftMaxModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    b = x.max(axis=1, keepdims=True)
+    x_exp = np.exp(x - b)
+    out = x_exp/x_exp.sum(axis=1, keepdims=True)
+
+    self.x = out
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -179,7 +187,13 @@ class SoftMaxModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    batch_size = self.x.shape[0]
+    n_classes = self.x.shape[1]
+
+    diag = np.vsplit(self.x, batch_size) * np.eye(n_classes)
+    temp = diag - self.x[:, :, None] * self.x[:, None, :]
+
+    dx = (dout[:, None, :] @ temp).reshape(batch_size, n_classes)
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -207,7 +221,7 @@ class CrossEntropyModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    out = np.mean(np.sum(-y * np.log(x), axis=1))
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -231,7 +245,8 @@ class CrossEntropyModule(object):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    batch_size = x.shape[0]
+    dx = (-y * 1/x) / batch_size
     ########################
     # END OF YOUR CODE    #
     #######################

@@ -75,10 +75,117 @@ def train():
   ########################
   # PUT YOUR CODE HERE  #
   #######################
-  raise NotImplementedError
+
+  cifar10 = cifar10_utils.get_cifar10(data_dir=FLAGS.data_dir, one_hot=True, validation_size=0)
+  n_classes = 10
+  n_inputs = 3 * 32 * 32
+
+  mlp = MLP(n_inputs, dnn_hidden_units, n_classes).to(device)
+
+  optimizer = torch.optim.SGD(mlp.parameters(), FLAGS.learning_rate)
+  loss_criterion = torch.nn.CrossEntropyLoss()
+  mlp.train()
+
+  _, (loss_axis, accuracy_axis) = plt.subplots(nrows=1, ncols=2, figsize=(10, 4))
+
+  train_steps = []
+  train_losses = []
+  train_accuracies = []
+
+  test_steps = []
+  test_losses = []
+  test_accuracies = []
+
+  for step in range(FLAGS.max_steps):
+      images, labels = cifar10['train'].next_batch(FLAGS.batch_size)
+      labels = torch.from_numpy(labels).long().to(device)
+      _, labels_indices = labels.max(1)
+      input_data = torch.from_numpy(images).reshape((FLAGS.batch_size, -1)).to(device)
+
+      optimizer.zero_grad()
+
+      outputs = mlp(input_data)
+      loss = loss_criterion(outputs, labels_indices)
+      train_accuracy = accuracy(outputs, labels)
+
+      train_steps.append(step)
+      train_losses.append(loss.data)
+      train_accuracies.append(train_accuracy)
+
+      loss.backward()
+      optimizer.step()
+
+      if (step % FLAGS.eval_freq) == 0:
+          mlp.eval()
+
+          test_images = cifar10['test'].images
+          test_labels = cifar10['test'].labels
+          test_labels = torch.from_numpy(test_labels).long().to(device)
+
+          _, test_labels_indices = test_labels.max(1)
+          test_input_data = torch.from_numpy(test_images).reshape((test_images.shape[0], -1)).to(device)
+
+          test_outputs = mlp(test_input_data)
+
+          test_loss = loss_criterion(test_outputs, test_labels_indices).data
+          test_accuracy = accuracy(test_outputs, test_labels)
+
+          test_accuracies.append(test_accuracy)
+          test_losses.append(test_loss)
+          test_steps.append(step)
+
+
+          # num_batches = cifar10['test'].num_examples//FLAGS.batch_size
+          #
+          # for i in range(num_batches):
+          #     test_images, test_labels = cifar10['test'].next_batch(FLAGS.batch_size)
+          #     test_labels = torch.from_numpy(test_labels).long().to(device)
+          #     _, test_labels_indices = test_labels.max(1)
+          #     test_input_data = torch.from_numpy(test_images).reshape((FLAGS.batch_size, -1)).to(device)
+          #
+          #     test_outputs = mlp(test_input_data)
+          #     test_loss += loss_criterion(test_outputs, test_labels_indices).data
+          #     test_accuracy += accuracy(test_outputs, test_labels)
+          #
+          # test_accuracy /= num_batches
+          # test_accuracies.append(test_accuracy)
+          # test_loss /= num_batches
+          # test_losses.append(test_loss)
+          # test_steps.append(step)
+
+          print(f"Test loss at {step} is: {test_loss}")
+          print(f"Test accuracy at {step} is: {test_accuracy}")
+
+          mlp.train()
+
+      # if (step % 3) == 0:
+      #     loss_axis.cla()
+      #     loss_axis.plot(train_steps, train_losses, label="train loss")
+      #     loss_axis.plot(test_steps, test_losses, label="test loss")
+      #     loss_axis.legend()
+      #     loss_axis.set_title('Train and Test Losses')
+      #     loss_axis.set_ylabel('Loss')
+      #     loss_axis.set_xlabel('Step')
+      #
+      #     accuracy_axis.cla()
+      #     accuracy_axis.plot(train_steps, train_accuracies, label="train accuracy")
+      #     accuracy_axis.plot(test_steps, test_accuracies, label="test accuracy")
+      #     accuracy_axis.set_title('Train and Test Accuracies')
+      #     accuracy_axis.legend()
+      #     accuracy_axis.set_ylabel('Accuracy')
+      #     accuracy_axis.set_xlabel('Step')
+      #
+      #     plt.draw()
+      #     plt.ion()
+      #     plt.show()
+      #
+      #     plt.pause(0.00001)
+
+  print('Finished Training')
   ########################
   # END OF YOUR CODE    #
   #######################
+
 
 def print_flags():
   """

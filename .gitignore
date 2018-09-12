@@ -1,11 +1,17 @@
 .DS_Store
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fix gitignore
 .idea
 .vscode
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+<<<<<<< HEAD
 *.pyc
+=======
+>>>>>>> fix gitignore
 *$py.class
 
 # C extensions
@@ -114,11 +120,14 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+<<<<<<< HEAD
 
 *.zip
 
 experiments/
 cifar10/
 
+=======
+>>>>>>> fix gitignore
 =======
 >>>>>>> fix gitignore

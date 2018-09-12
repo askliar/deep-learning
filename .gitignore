@@ -1,5 +1,4 @@
 .DS_Store
-<<<<<<< HEAD
 .idea
 .vscode
 # Byte-compiled / optimized / DLL files
@@ -119,5 +118,3 @@ dmypy.json
 
 experiments/
 cifar10/
-=======
->>>>>>> fix gitignore

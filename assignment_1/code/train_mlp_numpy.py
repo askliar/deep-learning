@@ -12,6 +12,7 @@ import os
 from mlp_numpy import MLP
 from modules import CrossEntropyModule
 import cifar10_utils
+import matplotlib.pyplot as plt 
 
 # Commented for running on display-less systems like surfsara
 # import matplotlib.pyplot as plt

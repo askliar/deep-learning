@@ -37,7 +37,9 @@ class CustomBatchNormAutograd(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    self.gamma = nn.Parameter(torch.ones(n_neurons))
+    self.beta = nn.Parameter(torch.zeros(n_neurons))
+    self.eps = eps
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -60,7 +62,22 @@ class CustomBatchNormAutograd(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    shape = input.shape
+
+    if len(shape) == 1:
+        input = input.unsqueeze(0)
+        shape = input.shape
+    elif len(shape) > 2:
+        raise ValueError(f"Expected 2D input. Instead, got {len(shape)}D input with shape of {shape}.")
+    elif shape[1] != self.gamma.shape[0]:
+        raise ValueError(f"Expected input of shape batch_size x {self.gamma.shape[0]}. Instead, got input with"
+                         f"shape of {shape}.")
+
+    mean = input.mean(0)
+    var = input.var(0)
+
+    x_hat = (input - mean)/torch.sqrt(var + self.eps)
+    out = self.gamma * x_hat + self.beta
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -114,7 +131,27 @@ class CustomBatchNormManualFunction(torch.autograd.Function):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    shape = input.shape
+
+    if len(shape) == 1:
+        input = input.unsqueeze(0)
+        shape = input.shape
+    elif len(shape) > 2:
+        raise ValueError(
+            f"Expected 2D input. Instead, got {len(shape)}D input with shape of {shape}.")
+    elif shape[1] != gamma.shape[0]:
+        raise ValueError(f"Expected input of shape batch_size x {gamma.shape[0]}. Instead, got input with"
+                         f"shape of {shape}.")
+
+    mean = input.mean(0)
+    var = input.var(0, unbiased = False)
+    inv_var = 1/torch.sqrt(var + eps)
+    x_hat = (input - mean) * inv_var
+    out = gamma * x_hat + beta
+
+    ctx.save_for_backward(input, gamma, beta, mean, inv_var)
+    ctx.eps = eps
+    
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -142,7 +179,17 @@ class CustomBatchNormManualFunction(torch.autograd.Function):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    input, gamma, beta, mean, inv_var = ctx.saved_tensors
+    input_needs_grad, gamma_needs_grad, beta_needs_grad = ctx.needs_input_grad
+    batch_dim = input.shape[0]
+
+    x_hat = (input - mean) * inv_var
+    dx_hat = grad_output * gamma
+    grad_gamma = (grad_output * x_hat).sum(0) if gamma_needs_grad else None
+    grad_beta = grad_output.sum(0) if beta_needs_grad else None
+    grad_input = 1./batch_dim * inv_var * \
+                (batch_dim * dx_hat - dx_hat.sum(0) - \
+                x_hat * (dx_hat * x_hat).sum(0)) if input_needs_grad else None
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -180,7 +227,9 @@ class CustomBatchNormManualModule(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    self.gamma = nn.Parameter(torch.ones(n_neurons))
+    self.beta = nn.Parameter(torch.zeros(n_neurons))
+    self.eps = eps
     ########################
     # END OF YOUR CODE    #
     #######################
@@ -203,7 +252,20 @@ class CustomBatchNormManualModule(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    shape = input.shape
+
+    if len(shape) == 1:
+        input = input.unsqueeze(0)
+        shape = input.shape
+    elif len(shape) > 2:
+        raise ValueError(
+            f"Expected 2D input. Instead, got {len(shape)}D input with shape of {shape}.")
+    elif shape[1] != self.gamma.shape[0]:
+        raise ValueError(f"Expected input of shape batch_size x {self.gamma.shape[0]}. Instead, got input with"
+                         f"shape of {shape}.")
+
+    batchNormFunc = CustomBatchNormManualFunction()
+    out = batchNormFunc.apply(input, self.gamma, self.beta, self.eps)
     ########################
     # END OF YOUR CODE    #
     #######################

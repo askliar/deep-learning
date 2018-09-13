@@ -110,7 +110,7 @@ def train():
       train_accuracy = accuracy(outputs, labels)
 
       train_steps.append(step)
-      train_losses.append(loss.data)
+      train_losses.append(loss)
       train_accuracies.append(train_accuracy)
 
       mlp.backward(loss_criterion.backward(outputs, labels))

@@ -9,9 +9,13 @@
 __pycache__/
 *.py[cod]
 <<<<<<< HEAD
+<<<<<<< HEAD
 *.pyc
 =======
 >>>>>>> fix gitignore
+=======
+*.pyc
+>>>>>>> finish batchnorm
 *$py.class
 
 # C extensions

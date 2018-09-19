@@ -87,6 +87,7 @@ def train():
   # PUT YOUR CODE HERE  #
   #######################
 <<<<<<< HEAD
+<<<<<<< HEAD
 
   cifar10 = cifar10_utils.get_cifar10(
       data_dir=FLAGS.data_dir, one_hot=True, validation_size=0)
@@ -94,6 +95,8 @@ def train():
 <<<<<<< HEAD
   raise NotImplementedError
 =======
+=======
+>>>>>>> finish assignment 1
 
   cifar10 = cifar10_utils.get_cifar10(data_dir=FLAGS.data_dir, one_hot=True, validation_size=0)
 >>>>>>> finish batchnorm
@@ -105,10 +108,14 @@ def train():
   loss_criterion = CrossEntropyModule()
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> finish assignment 1
   # Commented for running on display-less systems like surfsara
   # _, (loss_axis, accuracy_axis) = plt.subplots(
   #     nrows=1, ncols=2, figsize=(10, 4)
   # )
+<<<<<<< HEAD
 
   # arrays for storing accuracies, losses and steps in which evaluations were made
   # train_steps = []
@@ -123,17 +130,27 @@ def train():
   _, (loss_axis, accuracy_axis) = plt.subplots(
       nrows=1, ncols=2, figsize=(10, 4)
   )
+=======
+>>>>>>> finish assignment 1
 
-  train_steps = []
-  train_losses = []
-  train_accuracies = []
+  # arrays for storing accuracies, losses and steps in which evaluations were made
+  # train_steps = []
+  # train_losses = []
+  # train_accuracies = []
+  # test_steps = []
+  # test_losses = []
+  # test_accuracies = []
 
+<<<<<<< HEAD
   test_steps = []
   test_losses = []
   test_accuracies = []
 
   for step in range(FLAGS.max_steps):
 >>>>>>> finish batchnorm
+=======
+  for step in range(FLAGS.max_steps + 1):
+>>>>>>> finish assignment 1
       images, labels = cifar10['train'].next_batch(FLAGS.batch_size)
       input_data = images.reshape((FLAGS.batch_size, -1))
 
@@ -142,10 +159,14 @@ def train():
       train_accuracy = accuracy(outputs, labels)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> finish assignment 1
       # save train accuracies, losses and steps in which evaluations were made into corresponding arrays
       # train_steps.append(step)
       # train_losses.append(loss)
       # train_accuracies.append(train_accuracy)
+<<<<<<< HEAD
 
       mlp.backward(loss_criterion.backward(outputs, labels))
 
@@ -158,6 +179,12 @@ def train():
       mlp.backward(loss_criterion.backward(outputs, labels))
       
 >>>>>>> finish batchnorm
+=======
+
+      mlp.backward(loss_criterion.backward(outputs, labels))
+      
+      # update layer parameters using SGD
+>>>>>>> finish assignment 1
       for layer in mlp.layers:
         if hasattr(layer, 'params'):
           weight_grad = layer.grads['weight']
@@ -168,26 +195,41 @@ def train():
 
       if (step % FLAGS.eval_freq) == 0:
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> finish assignment 1
           test_loss = 0.0
           test_accuracy = 0.0
 
           # number of batches to go through the whole test dataset once
           num_batches = cifar10['test'].num_examples//FLAGS.batch_size
+<<<<<<< HEAD
 
           # evaluate using batches
           for i in range(num_batches):
               test_images, test_labels = cifar10['test'].next_batch(
                   FLAGS.batch_size)
+=======
+          
+          # evaluate using batches
+          for i in range(num_batches):
+              test_images, test_labels = cifar10['test'].next_batch(FLAGS.batch_size)
+>>>>>>> finish assignment 1
               test_input_data = test_images.reshape((test_images.shape[0], -1))
               test_outputs = mlp.forward(test_input_data)
 
               test_loss += loss_criterion.forward(test_outputs, test_labels)
               test_accuracy += accuracy(test_outputs, test_labels)
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> finish assignment 1
           test_accuracy /= num_batches
           test_loss /= num_batches
 
           # save test accuracies, losses and steps in which evaluations were made into corresponding arrays
+<<<<<<< HEAD
           # test_accuracies.append(test_accuracy)
 =======
 
@@ -221,6 +263,9 @@ def train():
           # test_accuracies.append(test_accuracy)
           # test_loss /= num_batches
 >>>>>>> finish batchnorm
+=======
+          # test_accuracies.append(test_accuracy)
+>>>>>>> finish assignment 1
           # test_losses.append(test_loss)
           # test_steps.append(step)
 
@@ -228,10 +273,15 @@ def train():
           print(f"Test accuracy at {step} is: {test_accuracy}")
 
 <<<<<<< HEAD
+<<<<<<< HEAD
       # Commented for running on display-less systems like surfsara
       # If uncommented - will dynamically plot loss and accuracy curves
 =======
 >>>>>>> finish batchnorm
+=======
+      # Commented for running on display-less systems like surfsara
+      # If uncommented - will dynamically plot loss and accuracy curves
+>>>>>>> finish assignment 1
       # if (step % 3) == 0:
       #     loss_axis.cla()
       #     loss_axis.plot(train_steps, train_losses, label="train loss")
@@ -254,8 +304,12 @@ def train():
       #     plt.show()
       #
       #     plt.pause(0.00001)
+<<<<<<< HEAD
 
 <<<<<<< HEAD
+=======
+      
+>>>>>>> finish assignment 1
       # save losses and accuracies to files
       # np.savetxt('test_steps.txt', np.array(test_steps))
       # np.savetxt('test_losses.txt', np.array(test_losses))
@@ -264,12 +318,17 @@ def train():
       # np.savetxt('train_steps.txt', np.array(train_steps))
       # np.savetxt('train_losses.txt', np.array(train_losses))
       # np.savetxt('train_accuracies.txt', np.array(train_accuracies))
+<<<<<<< HEAD
 
   print('Finished Training')
 =======
   print('Finished Training')
 >>>>>>> finish batchnorm
 >>>>>>> finish batchnorm
+=======
+      
+  print('Finished Training')
+>>>>>>> finish assignment 1
   ########################
   # END OF YOUR CODE    #
   #######################

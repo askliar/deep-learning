@@ -28,7 +28,10 @@ class LinearModule(object):
     #######################
     self.params = {'weight': None, 'bias': None}
     self.grads = {'weight': None, 'bias': None}
+<<<<<<< HEAD
 
+=======
+>>>>>>> finish assignment 1
     self.params['weight'] = np.random.normal(loc=0, scale=0.0001, size=(out_features, in_features))
     self.params['bias'] = np.zeros(shape=out_features)
     ########################

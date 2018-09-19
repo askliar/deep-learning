@@ -79,6 +79,7 @@ def accuracy(predictions, targets):
     return accuracy
 
 
+<<<<<<< HEAD
 def train():
     """
     Performs training and evaluation of MLP model. 
@@ -259,6 +260,179 @@ def train():
     # END OF YOUR CODE    #
     #######################
 
+=======
+  ### DO NOT CHANGE SEEDS!
+  # Set the random seeds for reproducibility
+  np.random.seed(42)
+
+  ## Prepare all functions
+  # Get number of units in each hidden layer specified in the string such as 100,100
+  if FLAGS.dnn_hidden_units:
+      dnn_hidden_units = FLAGS.dnn_hidden_units.split(",")
+      dnn_hidden_units = [int(dnn_hidden_unit_) for dnn_hidden_unit_ in dnn_hidden_units]
+  else:
+      dnn_hidden_units = []
+  
+  ########################
+  # PUT YOUR CODE HERE  #
+  #######################
+
+  # Split on ' ' (space), otherwise can't pass through qsub 
+  # Get number of units in each hidden layer specified in the string such as 100 100
+  # if FLAGS.dnn_hidden_units:
+  #     dnn_hidden_units = FLAGS.dnn_hidden_units.split(" ")
+  #     dnn_hidden_units = [int(dnn_hidden_unit_) for dnn_hidden_unit_ in dnn_hidden_units]
+  # else:
+  #     dnn_hidden_units = []
+
+  #  Get number of dropouts in each hidden layer specified in the string such as 0.2 0.2
+  # if FLAGS.dnn_dropouts:
+  #     dnn_dropouts = FLAGS.dnn_dropouts.split(" ")
+  #     dnn_dropouts = [float(dnn_dropout_)
+  #                     for dnn_dropout_ in dnn_dropouts]
+  # else:
+  #     dnn_dropouts = None
+
+  # Set torch seeds as well
+  random.seed(42)
+  torch.manual_seed(42)
+
+  cifar10 = cifar10_utils.get_cifar10(data_dir=FLAGS.data_dir, one_hot=True, validation_size=0)
+
+  # weight_decay = FLAGS.weight_decay
+  # momentum = FLAGS.momentum
+  batch_size = FLAGS.batch_size
+  lr = FLAGS.learning_rate
+
+  # set max_steps to 25 epochs (so, number of sptes per epoch * 25)
+  # FLAGS.max_steps = (cifar10['train'].num_examples//batch_size) * 25
+
+  # evaluate each epoch
+  # FLAGS.eval_freq = cifar10['train'].num_examples//batch_size
+
+  n_classes = 10
+  n_inputs = 3 * 32 * 32
+
+  mlp = nn.DataParallel(MLP(n_inputs, dnn_hidden_units,
+                            n_classes).to(device))  # dnn_dropouts)
+
+  optimizer = torch.optim.SGD(mlp.parameters(), lr=lr)
+  
+  # dynamically choose optimizer for the experiments
+  # optimizer = get_optimizer(FLAGS.optimizer, mlp, lr) # weight_decay=weight_decay, momentum=momentum)
+  loss_criterion = nn.CrossEntropyLoss()
+
+  # set mode to train
+  mlp.train()
+
+  # Commented for running on display-less systems like surfsara
+  # _, (loss_axis, accuracy_axis) = plt.subplots(nrows=1, ncols=2, figsize=(10, 4))
+
+  # arrays for storing accuracies, losses and steps in which evaluations were made
+  # train_steps = []
+  # train_losses = []
+  # train_accuracies = []
+  # test_steps = []
+  # test_losses = []
+  # test_accuracies = []
+
+  for step in range(FLAGS.max_steps + 1):
+
+      images, labels = cifar10['train'].next_batch(batch_size)
+      labels = torch.from_numpy(labels).long().to(device)
+      _, labels_indices = labels.max(1)
+      input_data = torch.from_numpy(images).reshape(
+          (batch_size, -1)).to(device)
+
+      optimizer.zero_grad()
+
+      outputs = mlp(input_data)
+      loss = loss_criterion(outputs, labels_indices)
+      train_accuracy = accuracy(outputs, labels)
+
+      # save train accuracies, losses and steps in which evaluations were made into corresponding arrays
+      # train_steps.append(step)
+      # train_losses.append(loss.item())
+      # train_accuracies.append(train_accuracy.item())
+
+      loss.backward()
+      optimizer.step()
+
+      if (step % FLAGS.eval_freq) == 0:
+          mlp.eval()
+
+          test_loss = 0.0
+          test_accuracy = 0.0
+
+          # number of batches to go through the whole test dataset once
+          num_batches = cifar10['test'].num_examples//batch_size
+          
+          # evaluate using batches, otherwise can run out of memory trying to process all images on GPU
+          for i in range(num_batches):
+              test_images, test_labels = cifar10['test'].next_batch(batch_size)
+              test_labels = torch.from_numpy(test_labels).long().to(device)
+              _, test_labels_indices = test_labels.max(1)
+              test_input_data = torch.from_numpy(test_images).reshape((batch_size, -1)).to(device)
+          
+              test_outputs = mlp(test_input_data)
+              test_loss += loss_criterion(test_outputs,
+                                          test_labels_indices).item()
+              test_accuracy += accuracy(test_outputs, test_labels).item()
+          
+          # average accuracy and loss over batches
+          test_accuracy /= num_batches
+          test_loss /= num_batches
+
+          # save test accuracies, losses and steps in which evaluations were made into corresponding arrays
+          # test_accuracies.append(test_accuracy)
+          # test_losses.append(test_loss)
+          # test_steps.append(step)
+
+          print(f'Test loss at {step} is: {test_loss}')
+          print(f'Test accuracy at {step} is: {test_accuracy}')
+
+          # set mode back to train
+          mlp.train()
+
+      # Commented for running on display-less systems like surfsara
+      # If uncommented - will dynamically plot loss and accuracy curves
+      # if (step % 3) == 0:
+      #     loss_axis.cla()
+      #     loss_axis.plot(train_steps, train_losses, label="train loss")
+      #     loss_axis.plot(test_steps, test_losses, label="test loss")
+      #     loss_axis.legend()
+      #     loss_axis.set_title('Train and Test Losses')
+      #     loss_axis.set_ylabel('Loss')
+      #     loss_axis.set_xlabel('Step')
+      #
+      #     accuracy_axis.cla()
+      #     accuracy_axis.plot(train_steps, train_accuracies, label="train accuracy")
+      #     accuracy_axis.plot(test_steps, test_accuracies, label="test accuracy")
+      #     accuracy_axis.set_title('Train and Test Accuracies')
+      #     accuracy_axis.legend()
+      #     accuracy_axis.set_ylabel('Accuracy')
+      #     accuracy_axis.set_xlabel('Step')
+      #
+      #     plt.draw()
+      #     plt.ion()
+      #     plt.show()
+      #
+      #     plt.pause(0.00001)
+  
+  # save losses and accuracies to a file, specific for each experiment
+  # with open(f'output_{batch_size}_{str(dnn_hidden_units)}_{lr}_{weight_decay}_{FLAGS.optimizer}_{momentum}_{str(dnn_dropouts)}.txt', 'w') as f:
+  #     f.write(f'Test steps: \n{test_steps}')
+  #     f.write(f'Test losses: \n{test_losses}')
+  #     f.write(f'Test accuracies: \n{test_accuracies}')
+
+  #     f.write(f'Train steps: \n{train_steps}')
+  #     f.write(f'Train losses: \n{train_losses}')
+  #     f.write(f'Train accuracies: \n{train_accuracies}')
+  print('Finished Training')
+  ########################
+  # END OF YOUR CODE    #
+  #######################
+>>>>>>> finish assignment 1
 
 
 def print_flags():
@@ -307,4 +481,8 @@ if __name__ == '__main__':
     #                     help='Momentum for SGD optimization.')
     FLAGS, unparsed = parser.parse_known_args()
 
+<<<<<<< HEAD
     main()
+=======
+  main()
+>>>>>>> finish assignment 1

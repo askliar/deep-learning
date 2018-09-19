@@ -18,7 +18,11 @@ class MLP(nn.Module):
     Once initialized an MLP object can perform forward.
     """
 
+<<<<<<< HEAD
     def __init__(self, n_inputs, n_hidden, n_classes, dropouts=None):
+=======
+    def __init__(self, n_inputs, n_hidden, n_classes, dropouts = None):
+>>>>>>> finish assignment 1
         """
         Initializes MLP object.
 
@@ -43,8 +47,12 @@ class MLP(nn.Module):
 
         # Check there is at least one node in the input layer
         if n_inputs < 1:
+<<<<<<< HEAD
             raise ValueError(
                 "Number of units in the input layer is incorrect. There should be at least one unit.")
+=======
+            raise ValueError("Number of units in the input layer is incorrect. There should be at least one unit.")
+>>>>>>> finish assignment 1
 
         # Check there is at least one node in each of the hidden layers.
         # Using `any` instead of all to speed up the check by using short circuit evaluation.
@@ -54,15 +62,23 @@ class MLP(nn.Module):
 
         # Check there is at least one node in the output layer
         if n_classes < 1:
+<<<<<<< HEAD
             raise ValueError(
                 "Number of units in the output layer is incorrect. There should be at least one unit.")
+=======
+            raise ValueError("Number of units in the output layer is incorrect. There should be at least one unit.")
+>>>>>>> finish assignment 1
 
         # Create list with sizes of all the layers.
         sizes = [n_inputs] + n_hidden + [n_classes]
 
         # Check dropout parameter
         # if dropouts is not None:
+<<<<<<< HEAD
         #     # Check if number of dropouts is the same as number of layers in the MLP
+=======
+        #     # Check if number of dropouts is the same as number of layers in the MLP 
+>>>>>>> finish assignment 1
         #     if isinstance(dropouts, list):
         #         if len(dropouts) > len(sizes) - 2:
         #             raise ValueError("Length of dropouts list is too large. It should be equal to the number "
@@ -117,6 +133,7 @@ class MLP(nn.Module):
         ########################
         # PUT YOUR CODE HERE  #
         #######################
+<<<<<<< HEAD
 
         # Check if x is of type Tensor - if not, convert it to Tensor type
         if not isinstance(x, torch.Tensor):
@@ -134,4 +151,18 @@ class MLP(nn.Module):
         # END OF YOUR CODE    #
         #######################
 
+=======
+
+        # Check if x is of type Tensor - if not, convert it to Tensor type
+        if not isinstance(x, torch.Tensor):
+            if isinstance(x, np.ndarray):
+                x = torch.from_numpy(x)
+            elif isinstance(x, list):
+                x = torch.FloatTensor(x)
+            else:
+                x = torch.FloatTensor([x])
+
+        # propagate x through sequential
+        out = self.mlp(x)
+>>>>>>> finish assignment 1
         return out

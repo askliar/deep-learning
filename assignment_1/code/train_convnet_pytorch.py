@@ -82,8 +82,12 @@ def train():
   ########################
   # PUT YOUR CODE HERE  #
   #######################
+<<<<<<< HEAD
   cifar10 = cifar10_utils.get_cifar10(
       data_dir=FLAGS.data_dir, one_hot=True, validation_size=0)
+=======
+  cifar10 = cifar10_utils.get_cifar10(data_dir=FLAGS.data_dir, one_hot=True, validation_size=0)
+>>>>>>> finish assignment 1
   n_classes = 10
   n_channels = 3
 
@@ -104,7 +108,11 @@ def train():
   test_accuracies = []
 
   for step in range(FLAGS.max_steps + 1):
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> finish assignment 1
     images, labels = cifar10['train'].next_batch(FLAGS.batch_size)
     labels = torch.from_numpy(labels).long().to(device)
     _, labels_indices = labels.max(1)
@@ -123,9 +131,15 @@ def train():
 
     loss.backward()
     optimizer.step()
+<<<<<<< HEAD
 
     if (step % FLAGS.eval_freq) == 0:
 
+=======
+ 
+    if (step % FLAGS.eval_freq) == 0:
+      
+>>>>>>> finish assignment 1
       # set mode to evaluation
       vgg.eval()
 
@@ -137,8 +151,12 @@ def train():
 
       # evaluate using batches, otherwise can run out of memory trying to process all images on GPU
       for i in range(num_batches):
+<<<<<<< HEAD
         test_images, test_labels = cifar10['train'].next_batch(
             FLAGS.batch_size)
+=======
+        test_images, test_labels = cifar10['train'].next_batch(FLAGS.batch_size)
+>>>>>>> finish assignment 1
         test_labels = torch.from_numpy(test_labels).long().to(device)
         _, test_labels_indices = test_labels.max(1)
         test_input_data = torch.from_numpy(test_images).to(device)
@@ -155,7 +173,11 @@ def train():
       # test_accuracies.append(test_accuracy)
       # test_losses.append(test_loss)
       # test_steps.append(step)
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> finish assignment 1
       print(f"Test loss is: {test_loss}")
       print(f"Test accuracy is: {test_accuracy}")
 

@@ -275,28 +275,28 @@ def main():
   train()
 
 if __name__ == '__main__':
-    # Command line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dnn_hidden_units', type=str, default=DNN_HIDDEN_UNITS_DEFAULT,
-                        help='Comma separated list of number of units in each hidden layer')
-    # parser.add_argument('--dnn_dropouts', type=str, default=DNN_DROPOUTS_DEFAULT,
-    #                     help='Comma separated list of number of dropouts after each hidden layer')
-    parser.add_argument('--learning_rate', type=float, default=LEARNING_RATE_DEFAULT,
-                        help='Learning rate')
-    parser.add_argument('--max_steps', type=int, default=MAX_STEPS_DEFAULT,
-                        help='Number of steps to run trainer.')
-    parser.add_argument('--batch_size', type=int, default=BATCH_SIZE_DEFAULT,
-                        help='Batch size to run trainer.')
-    parser.add_argument('--eval_freq', type=int, default=EVAL_FREQ_DEFAULT,
-                        help='Frequency of evaluation on the test set')
-    parser.add_argument('--data_dir', type=str, default=DATA_DIR_DEFAULT,
-                        help='Directory for storing input data')
-    # parser.add_argument('--optimizer', type=str, default=OPTIMIZER_DEFAULT,
-    #                     help='Optimizer to update parameters (SGD, Adam or Adagrad)')
-    # parser.add_argument('--weight_decay', type=float, default=WEIGHT_DECAY_DEFAULT,
-    #                     help='Weight decay for L2 regularization')
-    # parser.add_argument('--momentum', type=float, default=MOMENTUM_DEFAULT,
-    #                     help='Momentum for SGD optimization.')
-    FLAGS, unparsed = parser.parse_known_args()
+  # Command line arguments
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--dnn_hidden_units', type=str, default=DNN_HIDDEN_UNITS_DEFAULT,
+                      help='Comma separated list of number of units in each hidden layer')
+  # parser.add_argument('--dnn_dropouts', type=str, default=DNN_DROPOUTS_DEFAULT,
+  #                     help='Comma separated list of number of dropouts after each hidden layer')
+  parser.add_argument('--learning_rate', type=float, default=LEARNING_RATE_DEFAULT,
+                      help='Learning rate')
+  parser.add_argument('--max_steps', type=int, default=MAX_STEPS_DEFAULT,
+                      help='Number of steps to run trainer.')
+  parser.add_argument('--batch_size', type=int, default=BATCH_SIZE_DEFAULT,
+                      help='Batch size to run trainer.')
+  parser.add_argument('--eval_freq', type=int, default=EVAL_FREQ_DEFAULT,
+                      help='Frequency of evaluation on the test set')
+  parser.add_argument('--data_dir', type=str, default=DATA_DIR_DEFAULT,
+                      help='Directory for storing input data')
+  # parser.add_argument('--optimizer', type=str, default=OPTIMIZER_DEFAULT,
+  #                     help='Optimizer to update parameters (SGD, Adam or Adagrad)')
+  # parser.add_argument('--weight_decay', type=float, default=WEIGHT_DECAY_DEFAULT,
+  #                     help='Weight decay for L2 regularization')
+  # parser.add_argument('--momentum', type=float, default=MOMENTUM_DEFAULT,
+  #                     help='Momentum for SGD optimization.')
+  FLAGS, unparsed = parser.parse_known_args()
 
   main()

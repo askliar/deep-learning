@@ -125,13 +125,19 @@ venv.bak/
 .dmypy.json
 dmypy.json
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> finish assignment 1
 
 *.zip
 
 experiments/
 cifar10/
 
+<<<<<<< HEAD
 =======
 >>>>>>> fix gitignore
 =======
 >>>>>>> fix gitignore
+=======
+>>>>>>> finish assignment 1

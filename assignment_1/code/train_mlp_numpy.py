@@ -12,7 +12,9 @@ import os
 from mlp_numpy import MLP
 from modules import CrossEntropyModule
 import cifar10_utils
-import matplotlib.pyplot as plt 
+
+# Commented for running on display-less systems like surfsara
+# import matplotlib.pyplot as plt
 
 # Default constants
 DNN_HIDDEN_UNITS_DEFAULT = '100'
@@ -89,19 +91,20 @@ def train():
 
   loss_criterion = CrossEntropyModule()
 
-  _, (loss_axis, accuracy_axis) = plt.subplots(
-      nrows=1, ncols=2, figsize=(10, 4)
-  )
+  # Commented for running on display-less systems like surfsara
+  # _, (loss_axis, accuracy_axis) = plt.subplots(
+  #     nrows=1, ncols=2, figsize=(10, 4)
+  # )
 
-  train_steps = []
-  train_losses = []
-  train_accuracies = []
+  # arrays for storing accuracies, losses and steps in which evaluations were made
+  # train_steps = []
+  # train_losses = []
+  # train_accuracies = []
+  # test_steps = []
+  # test_losses = []
+  # test_accuracies = []
 
-  test_steps = []
-  test_losses = []
-  test_accuracies = []
-
-  for step in range(FLAGS.max_steps):
+  for step in range(FLAGS.max_steps + 1):
       images, labels = cifar10['train'].next_batch(FLAGS.batch_size)
       input_data = images.reshape((FLAGS.batch_size, -1))
 
@@ -109,12 +112,14 @@ def train():
       loss = loss_criterion.forward(outputs, labels)
       train_accuracy = accuracy(outputs, labels)
 
-      train_steps.append(step)
-      train_losses.append(loss)
-      train_accuracies.append(train_accuracy)
+      # save train accuracies, losses and steps in which evaluations were made into corresponding arrays
+      # train_steps.append(step)
+      # train_losses.append(loss)
+      # train_accuracies.append(train_accuracy)
 
       mlp.backward(loss_criterion.backward(outputs, labels))
       
+      # update layer parameters using SGD
       for layer in mlp.layers:
         if hasattr(layer, 'params'):
           weight_grad = layer.grads['weight']
@@ -124,42 +129,34 @@ def train():
           layer.params['bias'] -= FLAGS.learning_rate * bias_grad
 
       if (step % FLAGS.eval_freq) == 0:
+          test_loss = 0.0
+          test_accuracy = 0.0
 
-          test_images = cifar10['test'].images
-          test_labels = cifar10['test'].labels
+          # number of batches to go through the whole test dataset once
+          num_batches = cifar10['test'].num_examples//FLAGS.batch_size
+          
+          # evaluate using batches
+          for i in range(num_batches):
+              test_images, test_labels = cifar10['test'].next_batch(FLAGS.batch_size)
+              test_input_data = test_images.reshape((test_images.shape[0], -1))
+              test_outputs = mlp.forward(test_input_data)
 
-          test_input_data = test_images.reshape((test_images.shape[0], -1))
+              test_loss += loss_criterion.forward(test_outputs, test_labels)
+              test_accuracy += accuracy(test_outputs, test_labels)
+          
+          test_accuracy /= num_batches
+          test_loss /= num_batches
 
-          test_outputs = mlp.forward(test_input_data)
-
-          test_loss = loss_criterion.forward(test_outputs, test_labels)
-          test_accuracy = accuracy(test_outputs, test_labels)
-
-          test_accuracies.append(test_accuracy)
-          test_losses.append(test_loss)
-          test_steps.append(step)
-
-          # num_batches = cifar10['test'].num_examples//FLAGS.batch_size
-          #
-          # for i in range(num_batches):
-          #     test_images, test_labels = cifar10['test'].next_batch(FLAGS.batch_size)
-          #     test_labels = torch.from_numpy(test_labels).long().to(device)
-          #     _, test_labels_indices = test_labels.max(1)
-          #     test_input_data = torch.from_numpy(test_images).reshape((FLAGS.batch_size, -1)).to(device)
-          #
-          #     test_outputs = mlp(test_input_data)
-          #     test_loss += loss_criterion(test_outputs, test_labels_indices).data
-          #     test_accuracy += accuracy(test_outputs, test_labels)
-          #
-          # test_accuracy /= num_batches
+          # save test accuracies, losses and steps in which evaluations were made into corresponding arrays
           # test_accuracies.append(test_accuracy)
-          # test_loss /= num_batches
           # test_losses.append(test_loss)
           # test_steps.append(step)
 
           print(f"Test loss at {step} is: {test_loss}")
           print(f"Test accuracy at {step} is: {test_accuracy}")
 
+      # Commented for running on display-less systems like surfsara
+      # If uncommented - will dynamically plot loss and accuracy curves
       # if (step % 3) == 0:
       #     loss_axis.cla()
       #     loss_axis.plot(train_steps, train_losses, label="train loss")
@@ -182,7 +179,16 @@ def train():
       #     plt.show()
       #
       #     plt.pause(0.00001)
+      
+      # save losses and accuracies to files
+      # np.savetxt('test_steps.txt', np.array(test_steps))
+      # np.savetxt('test_losses.txt', np.array(test_losses))
+      # np.savetxt('test_accuracies.txt', np.array(test_accuracies))
 
+      # np.savetxt('train_steps.txt', np.array(train_steps))
+      # np.savetxt('train_losses.txt', np.array(train_losses))
+      # np.savetxt('train_accuracies.txt', np.array(train_accuracies))
+      
   print('Finished Training')
   ########################
   # END OF YOUR CODE    #

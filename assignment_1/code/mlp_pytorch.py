@@ -14,7 +14,7 @@ class MLP(nn.Module):
   """
 
   def __init__(self, n_inputs, n_hidden, n_classes):
-    """
+        """
     Initializes MLP object. 
     
     Args:

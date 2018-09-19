@@ -1,21 +1,10 @@
 .DS_Store
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> fix gitignore
 .idea
 .vscode
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-<<<<<<< HEAD
-<<<<<<< HEAD
 *.pyc
-=======
->>>>>>> fix gitignore
-=======
-*.pyc
->>>>>>> finish batchnorm
 *$py.class
 
 # C extensions
@@ -124,20 +113,8 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> finish assignment 1
 
 *.zip
 
 experiments/
 cifar10/
-
-<<<<<<< HEAD
-=======
->>>>>>> fix gitignore
-=======
->>>>>>> fix gitignore
-=======
->>>>>>> finish assignment 1

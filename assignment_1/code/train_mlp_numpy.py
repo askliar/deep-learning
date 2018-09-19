@@ -19,9 +19,6 @@ import cifar10_utils
 # import matplotlib.pyplot as plt
 >>>>>>> finish assignment 1
 
-# Commented for running on display-less systems like surfsara
-# import matplotlib.pyplot as plt
-
 # Default constants
 DNN_HIDDEN_UNITS_DEFAULT = '100'
 LEARNING_RATE_DEFAULT = 2e-3

@@ -11,11 +11,30 @@ import torch
 import torch.nn as nn
 
 
+<<<<<<< HEAD
 class MLP(nn.Module):
     """
     This class implements a Multi-layer Perceptron in PyTorch.
     It handles the different layers and parameters of the model.
     Once initialized an MLP object can perform forward.
+=======
+  def __init__(self, n_inputs, n_hidden, n_classes):
+        """
+    Initializes MLP object. 
+    
+    Args:
+      n_inputs: number of inputs.
+      n_hidden: list of ints, specifies the number of units
+                in each linear layer. If the list is empty, the MLP
+                will not have any linear layers, and the model
+                will simply perform a multinomial logistic regression.
+      n_classes: number of classes of the classification problem.
+                 This number is required in order to specify the
+                 output dimensions of the MLP
+    
+    TODO:
+    Implement initialization of the network.
+>>>>>>> merge assignment 1 and 2
     """
 
 <<<<<<< HEAD

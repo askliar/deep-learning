@@ -6,6 +6,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import torch
+import torch.nn as nn
+
 class ConvNet(nn.Module):
   """
   This class implements a Convolutional Neural Network in PyTorch.
@@ -131,7 +134,9 @@ class ConvNet(nn.Module):
     ########################
     # PUT YOUR CODE HERE  #
     #######################
-    raise NotImplementedError
+    features = self.feature_extraction(x)
+    features = features.reshape(-1, 512)
+    out = self.classification(features)
     ########################
     # END OF YOUR CODE    #
     #######################

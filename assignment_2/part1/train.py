@@ -43,15 +43,28 @@ def train(config):
     device = torch.device(config.device)
 
     # Initialize the model that we are going to use
-    model = None  # fixme
+    if config.model_type == 'RNN':
+        model = VanillaRNN(seq_length=config.input_length,
+                            input_dim=config.input_dim, 
+                            num_hidden=config.num_hidden,
+                            num_classes=config.num_classes,
+                            batch_size=config.batch_size,
+                            device=config.device) 
+    else:
+        model = LSTM(seq_length=config.input_length,
+                        input_dim=config.input_dim,
+                        num_hidden=config.num_hidden,
+                        num_classes=config.num_classes,
+                        batch_size=config.batch_size,
+                        device=config.device)
 
     # Initialize the dataset and data loader (note the +1)
     dataset = PalindromeDataset(config.input_length+1)
     data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
 
     # Setup the loss and optimizer
-    criterion = None  # fixme
-    optimizer = None  # fixme
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.RMSprop(model.params(), lr=config.learning_rate)
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 

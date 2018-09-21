@@ -32,28 +32,28 @@ class LSTM(nn.Module):
         self.h_init = torch.zeros(num_hidden, 1)
         self.c_init = torch.zeros(num_hidden, 1)
 
-        self.w_gx = nn.Parameter(torch.Tensor(
-            num_hidden, input_dim).normal_(mean=0, std=0.0001))
-        self.w_gh = nn.Parameter(torch.Tensor(
-            num_hidden, num_hidden).normal_(mean=0, std=0.0001))
+        self.w_gx = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, input_dim).normal_(mean=0, std=0.0001)))
+        self.w_gh = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, num_hidden).normal_(mean=0, std=0.0001)))
         self.b_g = nn.Parameter(torch.Tensor(num_hidden, 1).zero_())
 
-        self.w_ix = nn.Parameter(torch.Tensor(
-            num_hidden, input_dim).normal_(mean=0, std=0.0001))
-        self.w_ih = nn.Parameter(torch.Tensor(
-            num_hidden, num_hidden).normal_(mean=0, std=0.0001))
+        self.w_ix = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, input_dim).normal_(mean=0, std=0.0001)))
+        self.w_ih = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, num_hidden).normal_(mean=0, std=0.0001)))
         self.b_i = nn.Parameter(torch.Tensor(num_hidden, 1).zero_())
 
-        self.w_fx = nn.Parameter(torch.Tensor(
-            num_hidden, input_dim).normal_(mean=0, std=0.0001))
-        self.w_fh = nn.Parameter(torch.Tensor(
-            num_hidden, num_hidden).normal_(mean=0, std=0.0001))
+        self.w_fx = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, input_dim).normal_(mean=0, std=0.0001)))
+        self.w_fh = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, num_hidden).normal_(mean=0, std=0.0001)))
         self.b_f = nn.Parameter(torch.Tensor(num_hidden, 1).zero_())
 
-        self.w_ox = nn.Parameter(torch.Tensor(
-            num_hidden, input_dim).normal_(mean=0, std=0.0001))
-        self.w_oh = nn.Parameter(torch.Tensor(
-            num_hidden, num_hidden).normal_(mean=0, std=0.0001))
+        self.w_ox = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, input_dim).normal_(mean=0, std=0.0001)))
+        self.w_oh = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
+            num_hidden, num_hidden).normal_(mean=0, std=0.0001)))
         self.b_o = nn.Parameter(torch.Tensor(num_hidden, 1).zero_())
 
         self.w_ph = nn.Parameter(torch.Tensor(
@@ -68,14 +68,14 @@ class LSTM(nn.Module):
         sigmoid = nn.Sigmoid()
 
         for step in range(self.seq_length):
-            g_t = tanh(self.w_gx @ x[:, step].unsqueeze(0) + self.w_gh @ h_t + self.b_g)
-            i_t = sigmoid(self.w_ix @ x[:, step].unsqueeze(0) + self.w_ih @ h_t + self.b_i)
-            f_t = sigmoid(self.w_fx @ x[:, step].unsqueeze(0) + self.w_fh @ h_t + self.b_f)
-            o_t = sigmoid(self.w_ox @ x[:, step].unsqueeze(0) + self.w_oh @ h_t + self.b_o)
+            g_t = tanh(self.w_gx @ x[:, step].t() + self.w_gh @ h_t + self.b_g)
+            i_t = sigmoid(self.w_ix @ x[:, step].t() + self.w_ih @ h_t + self.b_i)
+            f_t = sigmoid(self.w_fx @ x[:, step].t() + self.w_fh @ h_t + self.b_f)
+            o_t = sigmoid(self.w_ox @ x[:, step].t() + self.w_oh @ h_t + self.b_o)
 
             c_t = g_t * i_t + c_t * f_t
             h_t = tanh(c_t) * o_t
 
         p_t = self.w_ph @ h_t + self.b_p
 
-        return p_t
+        return p_t.t()

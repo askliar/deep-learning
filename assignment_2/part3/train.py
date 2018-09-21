@@ -54,8 +54,7 @@ def calculate_accuracy(predictions, targets):
 
     _, predictions_indices = predictions.max(2)
     
-    accuracy = ((predictions_indices == targets).sum().float() /
-                (predictions_indices.shape[0]*predictions_indices.shape[1])).item()
+    accuracy = (predictions_indices == targets).float().mean().item()
 
     return accuracy
 
@@ -80,8 +79,13 @@ def train(config):
     loss_criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate)
 
-    for step, (batch_inputs, batch_targets) in enumerate(data_loader):
+    steps = []
+    losses = []
+    accuracies = []
+    generated_sentences = []
 
+    for step, (batch_inputs, batch_targets) in enumerate(data_loader):
+        steps.append(step)
         # Only for time measurement of step through network
         t1 = time.time()
 
@@ -99,8 +103,10 @@ def train(config):
             outputs.view(config.seq_length, -1, config.batch_size), 
             batch_targets
         )
+        losses.append(loss.item())
 
         accuracy = calculate_accuracy(outputs, batch_targets)
+        accuracies.append(accuracy.item())
 
         loss.backward()
         optimizer.step()
@@ -118,15 +124,34 @@ def train(config):
                       accuracy, loss
             ))
 
-        if step == config.sample_every:
-            # Generate some sentences by sampling from the model
-            pass
+        if step % config.sample_every == 0:
+            model.eval()
+            symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
+            generated_sequence = [symbol.item()]
+            for i in range(config.seq_length-1):
+                output = model(symbol)
+                symbol = torch.max(output, 0)[1].unsqueeze(0)
+                generated_sequence.append(symbol.item())
+
+            generated_str = dataset.convert_to_string(generated_sequence)
+            print(generated_str)
+            generated_sentences.append(generated_str)
+            model.train()
 
         if step == config.train_steps:
             # If you receive a PyTorch data-loader error, check this bug report:
             # https://github.com/pytorch/pytorch/pull/9655
             break
-
+    with open('logs.txt', 'w') as f:
+        f.write('Steps:\n')
+        f.write(str(steps))
+        f.write('\nLosses:\n')
+        f.write(str(losses))
+        f.write('\nAccuracies:\n')
+        f.write(str(accuracies))
+        f.write('\nGenerated sentences:\n')
+        f.write("<EOF>".join(generated_sentences))
+        
     print('Done training.')
 
 
@@ -163,6 +188,6 @@ if __name__ == "__main__":
     parser.add_argument('--sample_every', type=int, default=100, help='How often to sample from the model')
 
     config = parser.parse_args()
-
+ 
     # Train the model
     train(config)

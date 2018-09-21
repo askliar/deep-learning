@@ -36,7 +36,12 @@ class TextGenerationModel(nn.Module):
 
     def forward(self, x):
         encoded = self.encoder(x)
+        if len(encoded.shape) < 3:
+            encoded = encoded.unsqueeze(0)
         output, hidden = self.lstm(encoded)
         decoded = self.decoder(output)
-        return decoded
+        if len(x.shape) < 2:
+            return decoded.squeeze()
+        else:
+            return decoded
 

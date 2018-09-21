@@ -54,15 +54,17 @@ def calculate_accuracy(predictions, targets):
     Implement accuracy computation.
     """
 
-    _, predictions_indices = predictions.max(0)
+    _, predictions_indices = predictions.max(1)
 
-    accuracy = ((predictions_indices == targets).sum().float() / predictions_indices.shape[0]).item()
+    accuracy = (predictions_indices == targets).float().mean()
 
     return accuracy
 
 def train(config):
 
     assert config.model_type in ('RNN', 'LSTM')
+
+    assert config.input_dim in (1, 10)
 
     # Initialize the device which to run the model on
     device = torch.device(config.device)
@@ -96,6 +98,13 @@ def train(config):
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
+        if config.input_dim == 10 and len(batch_inputs.shape) < 3:
+            one_hot = torch.zeros(*batch_inputs.shape, 10)
+            indexing_tensor = batch_inputs.unsqueeze(-1).long()
+            batch_inputs = one_hot.scatter(2, indexing_tensor, 1)
+        else:
+            batch_inputs = batch_inputs.unsqueeze(2)
+
         # Only for time measurement of step through network
         t1 = time.time()
 
@@ -109,7 +118,7 @@ def train(config):
         torch.nn.utils.clip_grad_norm(model.parameters(), max_norm=config.max_norm)
         ############################################################################
 
-        loss = loss_criterion(outputs.t(), batch_targets)
+        loss = loss_criterion(outputs, batch_targets)
         accuracy = calculate_accuracy(outputs, batch_targets)
 
         loss.backward()
@@ -145,9 +154,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Model params
-    parser.add_argument('--model_type', type=str, default="LSTM", help="Model type, should be 'RNN' or 'LSTM'")
+    parser.add_argument('--model_type', type=str, default="RNN", help="Model type, should be 'RNN' or 'LSTM'")
     parser.add_argument('--input_length', type=int, default=10, help='Length of an input sequence')
-    parser.add_argument('--input_dim', type=int, default=1, help='Dimensionality of input sequence')
+    parser.add_argument('--input_dim', type=int, default=10, help='Dimensionality of input sequence')
     parser.add_argument('--num_classes', type=int, default=10, help='Dimensionality of output sequence')
     parser.add_argument('--num_hidden', type=int, default=128, help='Number of hidden units in the model')
     parser.add_argument('--batch_size', type=int, default=128, help='Number of examples to process in a batch')

@@ -33,33 +33,77 @@ from part3.model import TextGenerationModel
 
 ################################################################################
 
+
+def calculate_accuracy(predictions, targets):
+    """
+    Computes the prediction accuracy, i.e. the average of correct predictions
+    of the network.
+
+    Args:
+    predictions: 2D float array of size [batch_size, n_classes]
+    labels: 2D int array of size [batch_size, n_classes]
+            with one-hot encoding. Ground truth labels for
+            each sample in the batch
+    Returns:
+    accuracy: scalar float, the accuracy of predictions,
+                i.e. the average correct predictions over the whole batch
+
+    TODO:
+    Implement accuracy computation.
+    """
+
+    _, predictions_indices = predictions.max(2)
+    
+    accuracy = ((predictions_indices == targets).sum().float() /
+                (predictions_indices.shape[0]*predictions_indices.shape[1])).item()
+
+    return accuracy
+
 def train(config):
 
     # Initialize the device which to run the model on
     device = torch.device(config.device)
 
-    # Initialize the model that we are going to use
-    model = TextGenerationModel( ... )  # fixme
-
     # Initialize the dataset and data loader (note the +1)
-    dataset = TextDataset( ... )  # fixme
+    dataset = TextDataset(filename=config.txt_file,
+                          seq_length=config.seq_length)
     data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
 
+    # Initialize the model that we are going to use
+    model = TextGenerationModel(batch_size=config.batch_size, 
+                                seq_length=config.seq_length, 
+                                vocabulary_size=dataset.vocab_size,
+                                lstm_num_hidden=config.lstm_num_hidden, 
+                                lstm_num_layers=config.lstm_num_layers).to(device)
+
     # Setup the loss and optimizer
-    criterion = None  # fixme
-    optimizer = None  # fixme
+    loss_criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate)
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         # Only for time measurement of step through network
         t1 = time.time()
 
+        batch_inputs = torch.stack(batch_inputs).to(device)
+        batch_targets = torch.stack(batch_targets).to(device)
+        
+        outputs = model(batch_inputs)
+
         #######################################################
         # Add more code here ...
         #######################################################
 
-        loss = np.inf   # fixme
-        accuracy = 0.0  # fixme
+
+        loss = loss_criterion(
+            outputs.view(config.seq_length, -1, config.batch_size), 
+            batch_targets
+        )
+
+        accuracy = calculate_accuracy(outputs, batch_targets)
+
+        loss.backward()
+        optimizer.step()
 
         # Just for time measurement
         t2 = time.time()
@@ -67,11 +111,11 @@ def train(config):
 
         if step % config.print_every == 0:
 
-            print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, Examples/Sec = {:.2f}, "
+            print("[{}] Train Step {:04}/{:04}, Batch Size = {}, Examples/Sec = {:.2f}, "
                   "Accuracy = {:.2f}, Loss = {:.3f}".format(
-                    datetime.now().strftime("%Y-%m-%d %H:%M"), step,
-                    config.train_steps, config.batch_size, examples_per_second,
-                    accuracy, loss
+                      datetime.now().strftime("%Y-%m-%d %H:%M"), step,
+                      config.train_steps, config.batch_size, examples_per_second,
+                      accuracy, loss
             ))
 
         if step == config.sample_every:
@@ -103,7 +147,8 @@ if __name__ == "__main__":
     # Training params
     parser.add_argument('--batch_size', type=int, default=64, help='Number of examples to process in a batch')
     parser.add_argument('--learning_rate', type=float, default=2e-3, help='Learning rate')
-
+    parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
+    
     # It is not necessary to implement the following three params, but it may help training.
     parser.add_argument('--learning_rate_decay', type=float, default=0.96, help='Learning rate decay fraction')
     parser.add_argument('--learning_rate_step', type=int, default=5000, help='Learning rate step')

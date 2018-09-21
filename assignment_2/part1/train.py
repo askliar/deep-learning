@@ -35,6 +35,31 @@ from part1.lstm import LSTM
 
 ################################################################################
 
+
+def calculate_accuracy(predictions, targets):
+    """
+    Computes the prediction accuracy, i.e. the average of correct predictions
+    of the network.
+
+    Args:
+    predictions: 2D float array of size [batch_size, n_classes]
+    labels: 2D int array of size [batch_size, n_classes]
+            with one-hot encoding. Ground truth labels for
+            each sample in the batch
+    Returns:
+    accuracy: scalar float, the accuracy of predictions,
+                i.e. the average correct predictions over the whole batch
+
+    TODO:
+    Implement accuracy computation.
+    """
+
+    _, predictions_indices = predictions.max(0)
+
+    accuracy = ((predictions_indices == targets).sum().float() / predictions_indices.shape[0]).item()
+
+    return accuracy
+
 def train(config):
 
     assert config.model_type in ('RNN', 'LSTM')
@@ -49,7 +74,7 @@ def train(config):
                             num_hidden=config.num_hidden,
                             num_classes=config.num_classes,
                             batch_size=config.batch_size,
-                            device=config.device) 
+                            device=config.device)
     else:
         model = LSTM(seq_length=config.input_length,
                         input_dim=config.input_dim,
@@ -57,21 +82,26 @@ def train(config):
                         num_classes=config.num_classes,
                         batch_size=config.batch_size,
                         device=config.device)
+    model = model.to(device)
 
     # Initialize the dataset and data loader (note the +1)
     dataset = PalindromeDataset(config.input_length+1)
     data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
 
     # Setup the loss and optimizer
-    criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.RMSprop(model.params(), lr=config.learning_rate)
+    loss_criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate)
+
+    model.train()
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         # Only for time measurement of step through network
         t1 = time.time()
 
-        # Add more code here ...
+        optimizer.zero_grad()
+
+        outputs = model(batch_inputs)
 
         ############################################################################
         # QUESTION: what happens here and why?
@@ -79,10 +109,11 @@ def train(config):
         torch.nn.utils.clip_grad_norm(model.parameters(), max_norm=config.max_norm)
         ############################################################################
 
-        # Add more code here ...
+        loss = loss_criterion(outputs.t(), batch_targets)
+        accuracy = calculate_accuracy(outputs, batch_targets)
 
-        loss = np.inf   # fixme
-        accuracy = 0.0  # fixme
+        loss.backward()
+        optimizer.step()
 
         # Just for time measurement
         t2 = time.time()
@@ -114,7 +145,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Model params
-    parser.add_argument('--model_type', type=str, default="RNN", help="Model type, should be 'RNN' or 'LSTM'")
+    parser.add_argument('--model_type', type=str, default="LSTM", help="Model type, should be 'RNN' or 'LSTM'")
     parser.add_argument('--input_length', type=int, default=10, help='Length of an input sequence')
     parser.add_argument('--input_dim', type=int, default=1, help='Dimensionality of input sequence')
     parser.add_argument('--num_classes', type=int, default=10, help='Dimensionality of output sequence')
@@ -123,7 +154,8 @@ if __name__ == "__main__":
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
     parser.add_argument('--train_steps', type=int, default=10000, help='Number of training steps')
     parser.add_argument('--max_norm', type=float, default=10.0)
-    parser.add_argument('--device', type=str, default="cuda:0", help="Training device 'cpu' or 'cuda:0'")
+    # parser.add_argument('--device', type=str, default="cuda:0", help="Training device 'cpu' or 'cuda:0'")
+    parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
 
     config = parser.parse_args()
 

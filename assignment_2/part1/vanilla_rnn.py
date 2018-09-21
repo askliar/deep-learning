@@ -29,26 +29,23 @@ class VanillaRNN(nn.Module):
         super(VanillaRNN, self).__init__()
 
         self.seq_length = seq_length
-        self.h_init = torch.zeros(num_hidden)
+        self.h_init = torch.zeros(num_hidden, 1)
 
-        w_hx = nn.Parameter(torch.Tensor(num_hidden, input_dim).normal_(mean=0, std=0.0001))
-        w_hh = nn.Parameter(torch.Tensor(num_hidden, input_dim).normal_(mean=0, std=0.0001))
-        b_h = nn.Parameter(torch.Tensor(num_hidden).zero_())
+        self.w_hx = nn.Parameter(torch.Tensor(num_hidden, input_dim).normal_(mean=0, std=0.0001))
+        self.w_hh = nn.Parameter(torch.Tensor(num_hidden, num_hidden).normal_(mean=0, std=0.0001))
+        self.b_h = nn.Parameter(torch.Tensor(num_hidden, 1).zero_())
         
-        w_ph = nn.Parameter(torch.Tensor(num_classes, num_hidden).normal_(mean = 0, std = 0.0001))
-        b_p = nn.Parameter(torch.Tensor(num_hidden).zero_())
-
-        self.params = (w_hx, w_hh, b_h, w_ph, b_p)
+        self.w_ph = nn.Parameter(torch.Tensor(num_classes, num_hidden).normal_(mean = 0, std = 0.0001))
+        self.b_p = nn.Parameter(torch.Tensor(num_classes, 1).zero_())
 
     def forward(self, x):
         h_t = self.h_init
         tanh = nn.Tanh()
-        w_hx, w_hh, b_h, w_ph, b_p = self.params
 
         for step in range(self.seq_length):
-            h_t = tanh(w_hx @ x[step] + w_hh @ h_t + b_h)
-        
-        p_t = w_ph @ h_t + b_p
+            h_t = tanh(self.w_hx @ x[:, step].unsqueeze(0) + self.w_hh @ h_t + self.b_h)
+           
+        p_t = self.w_ph @ h_t + self.b_p
 
         return p_t
         

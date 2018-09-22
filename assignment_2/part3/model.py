@@ -26,7 +26,8 @@ class TextGenerationModel(nn.Module):
                  lstm_num_hidden=256, lstm_num_layers=2, device='cuda:0'):
 
         super(TextGenerationModel, self).__init__()
-        self.batch_size = batch_size
+        
+        self.hidden_size = lstm_num_hidden
         self.seq_length = seq_length
         self.encoder = nn.Embedding(num_embeddings=vocabulary_size, embedding_dim=lstm_num_hidden)
         self.lstm = nn.LSTM(input_size=lstm_num_hidden,
@@ -34,11 +35,19 @@ class TextGenerationModel(nn.Module):
                             num_layers=lstm_num_layers)
         self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
 
+    def initialize_hidden(self, batch_size, hidden_size):
+        return (torch.zeros(2, batch_size, hidden_size),
+                torch.zeros(2, batch_size, hidden_size))
+
     def forward(self, x):
         encoded = self.encoder(x)
+
         if len(encoded.shape) < 3:
             encoded = encoded.unsqueeze(0)
-        output, hidden = self.lstm(encoded)
+        
+        h_init = self.initialize_hidden(encoded.shape[1], self.hidden_size)
+
+        output, hidden = self.lstm(encoded, h_init)
         decoded = self.decoder(output)
         if len(x.shape) < 2:
             return decoded.squeeze()

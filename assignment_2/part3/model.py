@@ -48,6 +48,8 @@ class TextGenerationModel(nn.Module):
         
         h_init = self.initialize_hidden(encoded.shape[1], self.hidden_size)
 
+        self.lstm.flatten_parameters()
+        
         output, hidden = self.lstm(encoded, h_init)
         decoded = self.decoder(output)
         if len(x.shape) < 2:

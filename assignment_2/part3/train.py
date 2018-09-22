@@ -74,7 +74,7 @@ def train(config):
     data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
 
     # Initialize the model that we are going to use
-    model = nn.DataParallel(TextGenerationModel(batch_size=config.batch_size, 
+    model = torch.nn.DataParallel(TextGenerationModel(batch_size=config.batch_size, 
                                 seq_length=config.seq_length, 
                                 vocabulary_size=dataset.vocab_size,
                                 lstm_num_hidden=config.lstm_num_hidden, 

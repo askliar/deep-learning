@@ -104,7 +104,7 @@ def train(config):
             batch_targets = torch.stack(batch_targets).to(device)
             hidden = init_hidden(config.batch_size, device)
 
-            outputs, hidden = model.forward(batch_inputs, hidden)
+            outputs, hidden = model(batch_inputs, hidden)
 
             #######################################################
             # Add more code here ...
@@ -141,7 +141,7 @@ def train(config):
                 symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
                 generated_sequence = [symbol.item()]
                 for i in range(config.seq_length-1):
-                    output = model.forward(symbol, hidden)
+                    output = model(symbol, hidden)
                     symbol = torch.max(output, 0)[1].unsqueeze(0)
                     generated_sequence.append(symbol.item())
 

@@ -156,7 +156,7 @@ def train(config):
         f.write(str(accuracies))
         f.write('\nGenerated sentences:\n')
         f.write("<EOF>".join(generated_sentences))
-        
+    torch.save(model, 'trained_model.pth')
     print('Done training.')
 
 

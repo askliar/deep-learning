@@ -27,7 +27,6 @@ class TextGenerationModel(nn.Module):
 
         super(TextGenerationModel, self).__init__()
         
-        self.device = torch.device(device)
         self.hidden_size = lstm_num_hidden
         self.seq_length = seq_length
         self.encoder = nn.Embedding(num_embeddings=vocabulary_size, embedding_dim=lstm_num_hidden)

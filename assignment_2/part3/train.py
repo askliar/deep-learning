@@ -82,7 +82,7 @@ def train(config):
 
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
 
     steps = []
     losses = []
@@ -147,6 +147,7 @@ def train(config):
             # If you receive a PyTorch data-loader error, check this bug report:
             # https://github.com/pytorch/pytorch/pull/9655
             break
+
     with open('logs.txt', 'w') as f:
         f.write('Steps:\n')
         f.write(str(steps))
@@ -176,7 +177,7 @@ if __name__ == "__main__":
 
     # Training params
     parser.add_argument('--batch_size', type=int, default=64, help='Number of examples to process in a batch')
-    parser.add_argument('--learning_rate', type=float, default=2e-3, help='Learning rate')
+    parser.add_argument('--learning_rate', type=float, default=1e-4, help='Learning rate')
     parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
     
     # It is not necessary to implement the following three params, but it may help training.

@@ -8,6 +8,6 @@ cd $HOME/uvadlc_practicals_2018/assignment_2/part3
 
 echo "Job $PBS_JOBID with spatial started at `date`; text generation job is started" | mail $USER -s "Job $PBS_JOBID"
 
-python --txt_file books/book_of_jungle.txt train.py
+python train.py --txt_file books/book_of_jungle.txt
 
 echo "Job $PBS_JOBID with spatial ended at `date`; text generation job is finished" | mail $USER -s "Job $PBS_JOBID"

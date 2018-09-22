@@ -26,7 +26,7 @@ class TextGenerationModel(nn.Module):
                  lstm_num_hidden=256, lstm_num_layers=2, device='cuda:0'):
 
         super(TextGenerationModel, self).__init__()
-        
+
         self.hidden_size = lstm_num_hidden
         self.seq_length = seq_length
         self.encoder = nn.Embedding(num_embeddings=vocabulary_size, embedding_dim=lstm_num_hidden)
@@ -53,4 +53,4 @@ class TextGenerationModel(nn.Module):
         if len(x.shape) < 2:
             return decoded.squeeze()
         else:
-            return decoded, hidden
+            return decoded

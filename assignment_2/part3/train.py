@@ -98,7 +98,7 @@ def train(config):
             batch_inputs = torch.stack(batch_inputs).to(device)
             batch_targets = torch.stack(batch_targets).to(device)
 
-            outputs, hidden = model(batch_inputs)
+            outputs = model(batch_inputs)
 
             #######################################################
             # Add more code here ...

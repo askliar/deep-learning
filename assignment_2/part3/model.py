@@ -27,6 +27,7 @@ class TextGenerationModel(nn.Module):
 
         super(TextGenerationModel, self).__init__()
         
+        self.device = torch.device(device)
         self.hidden_size = lstm_num_hidden
         self.seq_length = seq_length
         self.encoder = nn.Embedding(num_embeddings=vocabulary_size, embedding_dim=lstm_num_hidden)
@@ -36,8 +37,8 @@ class TextGenerationModel(nn.Module):
         self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
 
     def initialize_hidden(self, batch_size, hidden_size):
-        return (torch.zeros(2, batch_size, hidden_size),
-                torch.zeros(2, batch_size, hidden_size))
+        return (torch.zeros(2, batch_size, hidden_size).to(self.device),
+                torch.zeros(2, batch_size, hidden_size).to(self.device))
 
     def forward(self, x):
         encoded = self.encoder(x)

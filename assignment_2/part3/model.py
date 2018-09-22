@@ -36,11 +36,12 @@ class TextGenerationModel(nn.Module):
                             num_layers=lstm_num_layers)
         self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
 
-        self.h_init = torch.zeros(lstm_num_layers, batch_size, lstm_num_hidden)
-        self.c_init = torch.zeros(lstm_num_layers, batch_size, lstm_num_hidden)
+        self.h_init = torch.zeros(lstm_num_layers, batch_size, lstm_num_hidden).to(self.device)
+        self.c_init = torch.zeros(
+            lstm_num_layers, batch_size, lstm_num_hidden).to(self.device)
 
-        self.inference_h_init = torch.zeros(lstm_num_layers, 1, lstm_num_hidden)
-        self.inference_c_init = torch.zeros(lstm_num_layers, 1, lstm_num_hidden)
+        self.inference_h_init = torch.zeros(lstm_num_layers, 1, lstm_num_hidden).to(self.device)
+        self.inference_c_init = torch.zeros(lstm_num_layers, 1, lstm_num_hidden).to(self.device)
 
         self.current_hidden = None
 

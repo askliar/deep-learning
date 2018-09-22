@@ -35,6 +35,10 @@ from part3.model import TextGenerationModel
 ################################################################################
 
 
+def init_hidden(batch_size, device):
+    return (torch.zeros(config.lstm_num_layers, batch_size, config.lstm_num_hidden).to(device),
+            torch.zeros(config.lstm_num_layers, batch_size, config.lstm_num_hidden).to(device))
+
 def calculate_accuracy(predictions, targets):
     """
     Computes the prediction accuracy, i.e. the average of correct predictions
@@ -74,7 +78,7 @@ def train(config):
     data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
 
     # Initialize the model that we are going to use
-    model = torch.nn.DataParallel(TextGenerationModel(batch_size=config.batch_size, 
+    model = torch.nn.DataParallel(TextGenerationModel(batch_size=config.batch_size,
                                 seq_length=config.seq_length, 
                                 vocabulary_size=dataset.vocab_size,
                                 lstm_num_hidden=config.lstm_num_hidden, 
@@ -98,13 +102,13 @@ def train(config):
 
             batch_inputs = torch.stack(batch_inputs).to(device)
             batch_targets = torch.stack(batch_targets).to(device)
-            
-            outputs = model(batch_inputs)
+            hidden = init_hidden(config.batch_size, device)
+
+            outputs, hidden = model.forward(batch_inputs, hidden)
 
             #######################################################
             # Add more code here ...
             #######################################################
-
 
             loss = loss_criterion(
                 outputs.permute(0, 2, 1), 
@@ -137,7 +141,7 @@ def train(config):
                 symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
                 generated_sequence = [symbol.item()]
                 for i in range(config.seq_length-1):
-                    output = model(symbol)
+                    output = model.forward(symbol, hidden)
                     symbol = torch.max(output, 0)[1].unsqueeze(0)
                     generated_sequence.append(symbol.item())
 
@@ -162,7 +166,7 @@ def train(config):
                 f.write('\nGenerated sentences:\n')
                 f.write("<EOF>".join(generated_sentences))
 
-                torch.save(model, 'trained_model.pth')
+                torch.save(model.state_dict(), 'trained_model.pth')
 
     print('Done training.')
 

@@ -36,24 +36,18 @@ class TextGenerationModel(nn.Module):
                             num_layers=lstm_num_layers)
         self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
 
-    def initialize_hidden(self, batch_size, hidden_size):
-        return (torch.zeros(2, batch_size, hidden_size).to(self.device),
-                torch.zeros(2, batch_size, hidden_size).to(self.device))
+    def forward(self, x, hidden):
 
-    def forward(self, x):
         encoded = self.encoder(x)
 
         if len(encoded.shape) < 3:
             encoded = encoded.unsqueeze(0)
-        
-        h_init = self.initialize_hidden(encoded.shape[1], self.hidden_size)
 
         self.lstm.flatten_parameters()
-        
-        output, hidden = self.lstm(encoded, h_init)
+        output, hidden = self.lstm(encoded)
         decoded = self.decoder(output)
+        
         if len(x.shape) < 2:
             return decoded.squeeze()
         else:
-            return decoded
-
+            return decoded, hidden

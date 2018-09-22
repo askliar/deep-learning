@@ -21,6 +21,7 @@ import os
 import time
 from datetime import datetime
 import argparse
+import random
 
 import numpy as np
 
@@ -60,6 +61,10 @@ def calculate_accuracy(predictions, targets):
 
 def train(config):
 
+    np.random.seed(42)
+    random.seed(42)
+    torch.manual_seed(42)
+
     # Initialize the device which to run the model on
     device = torch.device(config.device)
 
@@ -69,11 +74,11 @@ def train(config):
     data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
 
     # Initialize the model that we are going to use
-    model = TextGenerationModel(batch_size=config.batch_size, 
+    model = nn.DataParallel(TextGenerationModel(batch_size=config.batch_size, 
                                 seq_length=config.seq_length, 
                                 vocabulary_size=dataset.vocab_size,
                                 lstm_num_hidden=config.lstm_num_hidden, 
-                                lstm_num_layers=config.lstm_num_layers).to(device)
+                                lstm_num_layers=config.lstm_num_layers).to(device))
 
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()

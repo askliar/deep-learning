@@ -105,7 +105,7 @@ def train(config):
 
 
         loss = loss_criterion(
-            outputs.view(config.seq_length, -1, config.batch_size), 
+            outputs.permute(0, 2, 1), 
             batch_targets
         )
         losses.append(loss.item())

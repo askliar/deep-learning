@@ -54,7 +54,7 @@ def calculate_accuracy(predictions, targets):
 
     _, predictions_indices = predictions.max(2)
     
-    accuracy = (predictions_indices == targets).float().mean().item()
+    accuracy = (predictions_indices == targets).float().mean()
 
     return accuracy
 

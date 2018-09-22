@@ -82,7 +82,7 @@ def train(config):
 
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+    optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min')
 
     steps = []
@@ -90,7 +90,7 @@ def train(config):
     accuracies = []
     generated_sentences = []
 
-    for epoch in range(100):
+    for epoch in range(25):
         for step, (batch_inputs, batch_targets) in enumerate(data_loader):
             steps.append(step)
             # Only for time measurement of step through network
@@ -163,7 +163,7 @@ def train(config):
                 f.write("<EOF>".join(generated_sentences))
 
                 torch.save(model, 'trained_model.pth')
-                
+
     print('Done training.')
 
 
@@ -183,7 +183,7 @@ if __name__ == "__main__":
 
     # Training params
     parser.add_argument('--batch_size', type=int, default=64, help='Number of examples to process in a batch')
-    parser.add_argument('--learning_rate', type=float, default=1e-4, help='Learning rate')
+    parser.add_argument('--learning_rate', type=float, default=2e-3, help='Learning rate')
     parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
     
     # It is not necessary to implement the following three params, but it may help training.

@@ -34,11 +34,6 @@ from part3.model import TextGenerationModel
 
 ################################################################################
 
-
-def init_hidden(batch_size, device):
-    return (torch.zeros(config.lstm_num_layers, batch_size, config.lstm_num_hidden).to(device),
-            torch.zeros(config.lstm_num_layers, batch_size, config.lstm_num_hidden).to(device))
-
 def calculate_accuracy(predictions, targets):
     """
     Computes the prediction accuracy, i.e. the average of correct predictions
@@ -102,9 +97,8 @@ def train(config):
 
             batch_inputs = torch.stack(batch_inputs).to(device)
             batch_targets = torch.stack(batch_targets).to(device)
-            hidden = init_hidden(config.batch_size, device)
 
-            outputs, hidden = model(batch_inputs, hidden)
+            outputs, hidden = model(batch_inputs)
 
             #######################################################
             # Add more code here ...
@@ -141,7 +135,7 @@ def train(config):
                 symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
                 generated_sequence = [symbol.item()]
                 for i in range(config.seq_length-1):
-                    output = model(symbol, hidden)
+                    output = model(symbol)
                     symbol = torch.max(output, 0)[1].unsqueeze(0)
                     generated_sequence.append(symbol.item())
 

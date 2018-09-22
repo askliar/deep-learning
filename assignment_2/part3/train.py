@@ -83,70 +83,73 @@ def train(config):
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min')
 
     steps = []
     losses = []
     accuracies = []
     generated_sentences = []
 
-    for step, (batch_inputs, batch_targets) in enumerate(data_loader):
-        steps.append(step)
-        # Only for time measurement of step through network
-        t1 = time.time()
+    for epoch in range(100):
+        for step, (batch_inputs, batch_targets) in enumerate(data_loader):
+            steps.append(step)
+            # Only for time measurement of step through network
+            t1 = time.time()
 
-        batch_inputs = torch.stack(batch_inputs).to(device)
-        batch_targets = torch.stack(batch_targets).to(device)
-        
-        outputs = model(batch_inputs)
+            batch_inputs = torch.stack(batch_inputs).to(device)
+            batch_targets = torch.stack(batch_targets).to(device)
+            
+            outputs = model(batch_inputs)
 
-        #######################################################
-        # Add more code here ...
-        #######################################################
+            #######################################################
+            # Add more code here ...
+            #######################################################
 
 
-        loss = loss_criterion(
-            outputs.permute(0, 2, 1), 
-            batch_targets
-        )
-        losses.append(loss.item())
+            loss = loss_criterion(
+                outputs.permute(0, 2, 1), 
+                batch_targets
+            )
+            losses.append(loss.item())
 
-        accuracy = calculate_accuracy(outputs, batch_targets)
-        accuracies.append(accuracy.item())
+            accuracy = calculate_accuracy(outputs, batch_targets)
+            accuracies.append(accuracy.item())
 
-        loss.backward()
-        optimizer.step()
+            loss.backward()
+            optimizer.step()
+            scheduler.step(loss)
 
-        # Just for time measurement
-        t2 = time.time()
-        examples_per_second = config.batch_size/float(t2-t1)
+            # Just for time measurement
+            t2 = time.time()
+            examples_per_second = config.batch_size/float(t2-t1)
 
-        if step % config.print_every == 0:
+            if step % config.print_every == 0:
 
-            print("[{}] Train Step {:04}/{:04}, Batch Size = {}, Examples/Sec = {:.2f}, "
-                  "Accuracy = {:.2f}, Loss = {:.3f}".format(
-                      datetime.now().strftime("%Y-%m-%d %H:%M"), step,
-                      config.train_steps, config.batch_size, examples_per_second,
-                      accuracy, loss
-            ))
+                print("[{}] Train Step {:04}/{:04}, Batch Size = {}, Examples/Sec = {:.2f}, "
+                    "Accuracy = {:.2f}, Loss = {:.3f}".format(
+                        datetime.now().strftime("%Y-%m-%d %H:%M"), step,
+                        config.train_steps, config.batch_size, examples_per_second,
+                        accuracy, loss
+                ))
 
-        if step % config.sample_every == 0:
-            model.eval()
-            symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
-            generated_sequence = [symbol.item()]
-            for i in range(config.seq_length-1):
-                output = model(symbol)
-                symbol = torch.max(output, 0)[1].unsqueeze(0)
-                generated_sequence.append(symbol.item())
+            if step % config.sample_every == 0:
+                model.eval()
+                symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
+                generated_sequence = [symbol.item()]
+                for i in range(config.seq_length-1):
+                    output = model(symbol)
+                    symbol = torch.max(output, 0)[1].unsqueeze(0)
+                    generated_sequence.append(symbol.item())
 
-            generated_str = dataset.convert_to_string(generated_sequence)
-            print(generated_str)
-            generated_sentences.append(generated_str)
-            model.train()
+                generated_str = dataset.convert_to_string(generated_sequence)
+                print(generated_str)
+                generated_sentences.append(generated_str)
+                model.train()
 
-        if step == config.train_steps:
-            # If you receive a PyTorch data-loader error, check this bug report:
-            # https://github.com/pytorch/pytorch/pull/9655
-            break
+            if step == config.train_steps:
+                # If you receive a PyTorch data-loader error, check this bug report:
+                # https://github.com/pytorch/pytorch/pull/9655
+                break
 
     with open('logs.txt', 'w') as f:
         f.write('Steps:\n')

@@ -151,16 +151,19 @@ def train(config):
                 # https://github.com/pytorch/pytorch/pull/9655
                 break
 
-    with open('logs.txt', 'w') as f:
-        f.write('Steps:\n')
-        f.write(str(steps))
-        f.write('\nLosses:\n')
-        f.write(str(losses))
-        f.write('\nAccuracies:\n')
-        f.write(str(accuracies))
-        f.write('\nGenerated sentences:\n')
-        f.write("<EOF>".join(generated_sentences))
-    torch.save(model, 'trained_model.pth')
+            with open('logs.txt', 'w') as f:
+                f.write(f'Epoch: {epoch}\n')
+                f.write('Steps:\n')
+                f.write(str(steps))
+                f.write('\nLosses:\n')
+                f.write(str(losses))
+                f.write('\nAccuracies:\n')
+                f.write(str(accuracies))
+                f.write('\nGenerated sentences:\n')
+                f.write("<EOF>".join(generated_sentences))
+
+                torch.save(model, 'trained_model.pth')
+                
     print('Done training.')
 
 

@@ -20,43 +20,63 @@ from __future__ import print_function
 import torch
 import torch.nn as nn
 
+
 class TextGenerationModel(nn.Module):
 
     def __init__(self, batch_size, seq_length, vocabulary_size,
-                 lstm_num_hidden=256, lstm_num_layers=2, device='cuda:0'):
+                 lstm_num_hidden=256, lstm_num_layers=2,
+                 dropout=0.0, embedding=False,
+                 device='cuda:0'):
 
         super(TextGenerationModel, self).__init__()
 
         self.hidden_size = lstm_num_hidden
         self.seq_length = seq_length
-        self.encoder = nn.Embedding(num_embeddings=vocabulary_size, embedding_dim=lstm_num_hidden)
-        self.lstm = nn.LSTM(input_size=lstm_num_hidden,
-                            hidden_size=lstm_num_hidden, 
-                            num_layers=lstm_num_layers)
-        self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
+        self.embedding = embedding
+        self.vocabulary_size = vocabulary_size
 
+        if embedding:
+            embedding_dim = lstm_num_hidden
+            self.encoder = nn.Embedding(num_embeddings=vocabulary_size, 
+                                        embedding_dim=embedding_dim)
+        else:
+            embedding_dim = vocabulary_size
+
+        self.lstm = nn.LSTM(input_size=embedding_dim,
+                            hidden_size=lstm_num_hidden,
+                            num_layers=lstm_num_layers,
+                            dropout=dropout)
+        self.decoder = nn.Linear(
+            in_features=lstm_num_hidden, out_features=vocabulary_size)
         self.current_hidden = None
 
+    def to_one_hot(self, input, size):
+        one_hot = torch.zeros(*input.shape, size)
+        indexing_tensor = input.unsqueeze(-1).long()
+        batch_inputs = one_hot.scatter(2, indexing_tensor, 1)
+        return batch_inputs
+
     def forward(self, x):
-
-        encoded = self.encoder(x)
-
-        if len(encoded.shape) < 3:
-            encoded = encoded.unsqueeze(0)
+        if len(x.shape) < 2:
+            x = x.unsqueeze(0)
+        
+        if self.embedding:
+            encoded = self.encoder(x)
+        else:
+            encoded = self.to_one_hot(x, self.vocabulary_size)
 
         self.lstm.flatten_parameters()
 
-        if self.training:
+        if not self.training:
+            output, hidden = self.lstm(encoded, self.current_hidden)
+            if len(hidden[0].shape) > 2:
+                hidden = (hidden[0][:, -1, :].unsqueeze(1),
+                          hidden[1][:, -1, :].unsqueeze(1))
+            self.current_hidden = hidden
+        else:
+            output, hidden = self.lstm(encoded)
             self.current_hidden = None
 
-        output, hidden = self.lstm(encoded, self.current_hidden)
-
-        if not self.training:
-            self.current_hidden = hidden
-
         decoded = self.decoder(output)
-        
-        if len(x.shape) < 2:
-            return decoded.squeeze()
-        else:
-            return decoded
+
+        return decoded

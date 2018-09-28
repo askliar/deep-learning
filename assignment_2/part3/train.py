@@ -58,11 +58,18 @@ def calculate_accuracy(predictions, targets):
 
     return accuracy
 
-def train(config):
 
-    np.random.seed(42)
-    random.seed(42)
-    torch.manual_seed(42)
+def sample_single(x, sampling='greedy', temperature=1.0):
+    if sampling == 'greedy':
+        output = torch.max(x, 0)[1].unsqueeze(0)
+    elif sampling == 'random':
+        if temperature > 0.0:
+            x = x/temperature
+        distr = torch.distributions.Categorical(logits=x)
+        output = distr.sample(sample_shape=(1, 1))
+    return output
+
+def train(config):
 
     # Initialize the device which to run the model on
     device = torch.device(config.device)
@@ -70,19 +77,32 @@ def train(config):
     # Initialize the dataset and data loader (note the +1)
     dataset = TextDataset(filename=config.txt_file,
                           seq_length=config.seq_length)
-    data_loader = DataLoader(dataset, config.batch_size, num_workers=1)
+    data_loader = DataLoader(dataset, config.batch_size,
+                             num_workers=1)
+
+    dropout = 1.0 - config.dropout_keep_prob
 
     # Initialize the model that we are going to use
     model = torch.nn.DataParallel(TextGenerationModel(batch_size=config.batch_size,
-                                seq_length=config.seq_length, 
-                                vocabulary_size=dataset.vocab_size,
-                                lstm_num_hidden=config.lstm_num_hidden, 
-                                lstm_num_layers=config.lstm_num_layers).to(device))
+                                                        seq_length=config.seq_length,
+                                                        vocabulary_size=dataset.vocab_size,
+                                                        lstm_num_hidden=config.lstm_num_hidden,
+                                                        lstm_num_layers=config.lstm_num_layers,
+                                                        dropout=dropout, embedding=config.embedding).to(device))
+    if config.model_name is not None:
+        model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
 
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min')
+    if config.optimizer == 'rmsprop':
+        optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate, 
+                                        weight_decay=config.weight_decay)
+    elif config.optimizer == 'adam':
+        optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate,
+                                     weight_decay=config.weight_decay)
+
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=config.learning_rate_step,
+                                                gamma=config.learning_rate_decay)
 
     steps = []
     losses = []
@@ -104,6 +124,8 @@ def train(config):
             # Add more code here ...
             #######################################################
 
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=config.max_norm)
+
             loss = loss_criterion(
                 outputs.permute(0, 2, 1), 
                 batch_targets
@@ -115,7 +137,7 @@ def train(config):
 
             loss.backward()
             optimizer.step()
-            scheduler.step(loss)
+            scheduler.step(loss.item())
 
             # Just for time measurement
             t2 = time.time()
@@ -132,13 +154,21 @@ def train(config):
 
             if step % config.sample_every == 0:
                 model.eval()
-                symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long()
-                generated_sequence = [symbol.item()]
-                for i in range(config.seq_length-1):
-                    output = model(symbol)
-                    symbol = torch.max(output, 0)[1].unsqueeze(0)
+                if config.generation == 'start':
+                    generated_sequence = []
+                    symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
                     generated_sequence.append(symbol.item())
-
+                elif config.generation == 'complete':
+                    generated_sequence = dataset.convert_to_ix(config.input_text)
+                    input = torch.Tensor(generated_sequence).to(device)
+                    output = model(input)
+                    symbol = input[-1].unsqueeze(0).to(device)
+                    
+                for i in range(config.generation_seq_length-1):
+                    output = model(symbol).squeeze()
+                    symbol = sample_single(output, sampling=config.sampling, 
+                                            temperature=config.temperature).to(device)
+                    generated_sequence.append(symbol.item())
                 generated_str = dataset.convert_to_string(generated_sequence)
                 print(generated_str)
                 generated_sentences.append(generated_str)
@@ -149,16 +179,17 @@ def train(config):
                 # https://github.com/pytorch/pytorch/pull/9655
                 break
 
-            with open('logs.txt', 'w') as f:
-                f.write(f'Epoch: {epoch}\n')
-                f.write('Steps:\n')
-                f.write(str(steps))
-                f.write('\nLosses:\n')
-                f.write(str(losses))
-                f.write('\nAccuracies:\n')
-                f.write(str(accuracies))
-                f.write('\nGenerated sentences:\n')
-                f.write("<EOF>".join(generated_sentences))
+            if step % config.save_every == 0:
+                with open('logs.txt', 'w') as f:
+                    f.write(f'Epoch: {epoch}\n')
+                    f.write('Steps:\n')
+                    f.write(str(steps))
+                    f.write('\nLosses:\n')
+                    f.write(str(losses))
+                    f.write('\nAccuracies:\n')
+                    f.write(str(accuracies))
+                    f.write('\nGenerated sentences:\n')
+                    f.write("<EOF>".join(generated_sentences))
 
                 torch.save(model.state_dict(), 'trained_model.pth')
 
@@ -169,7 +200,6 @@ def train(config):
  ################################################################################
 
 if __name__ == "__main__":
-
     # Parse training configuration
     parser = argparse.ArgumentParser()
 
@@ -181,11 +211,12 @@ if __name__ == "__main__":
 
     # Training params
     parser.add_argument('--batch_size', type=int, default=64, help='Number of examples to process in a batch')
-    parser.add_argument('--learning_rate', type=float, default=1e-5, help='Learning rate')
+    parser.add_argument('--learning_rate', type=float, default=2e-3, help='Learning rate')
     parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
     
     # It is not necessary to implement the following three params, but it may help training.
     parser.add_argument('--learning_rate_decay', type=float, default=0.96, help='Learning rate decay fraction')
+    parser.add_argument('--weight_decay', type=float, default=0.01, help='Learning rate weight decay fraction')
     parser.add_argument('--learning_rate_step', type=int, default=5000, help='Learning rate step')
     parser.add_argument('--dropout_keep_prob', type=float, default=1.0, help='Dropout keep probability')
 
@@ -197,7 +228,28 @@ if __name__ == "__main__":
     parser.add_argument('--print_every', type=int, default=5, help='How often to print training progress')
     parser.add_argument('--sample_every', type=int, default=100, help='How often to sample from the model')
 
+    parser.add_argument('--save_every', type=int, default=500, help='How often to save the model and logs.')
+    parser.add_argument('--model_path', type=str, default='./checkpoints/', help='Output path for saving model')
+    parser.add_argument('--optimizer', type=str, default='rmsprop', choices=['adam', 'rmsprop'], 
+                        help='Optimizer to use for training.')
+    parser.add_argument('--model_name', type=str, default=None, help='Model to load from checkpoints.')
+
+    parser.add_argument('--sampling', type=str, default='greedy', choices=['greedy', 'random'], help='Sampling to user.')
+    parser.add_argument('--temperature', type=float, default = 1.0, help='Temperature for random sampling')
+    parser.add_argument('--embedding', type=bool, default=False, help='Whether to use embedding instead of one-hot encoding.')
+
+    parser.add_argument('--generation', type=str, default='start', choices=['start', 'complete'], 
+                        help='Whether to generate text from a random first letter or complete sentence.')
+    parser.add_argument('--generation_seq_length', type=int, default=500, help='Length of a generated sequence')
+    parser.add_argument('--input_text', type=str, default=' ', help='Text to finish using pre-trained lstm.')
+
     config = parser.parse_args()
+
+    if not os.path.exists(config.summary_path):
+        os.makedirs(config.summary_path)
+    
+    if not os.path.exists(config.model_path):
+        os.makedirs(config.model_path)
  
     # Train the model
     train(config)

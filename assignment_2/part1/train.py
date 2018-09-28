@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import argparse
 import time
+import pickle
 from datetime import datetime
 import numpy as np
 
@@ -60,6 +61,12 @@ def calculate_accuracy(predictions, targets):
 
     return accuracy
 
+def to_one_hot(input):
+    one_hot = torch.zeros(*input.shape, 10)
+    indexing_tensor = input.unsqueeze(-1).long()
+    batch_inputs = one_hot.scatter(2, indexing_tensor, 1)
+    return batch_inputs
+
 def train(config):
 
     assert config.model_type in ('RNN', 'LSTM')
@@ -68,6 +75,10 @@ def train(config):
 
     # Initialize the device which to run the model on
     device = torch.device(config.device)
+
+    accuracies = []
+
+    filename = f'{config.model_type}_{input_length}.pkl'
 
     # Initialize the model that we are going to use
     if config.model_type == 'RNN':
@@ -99,9 +110,7 @@ def train(config):
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         if config.input_dim == 10 and len(batch_inputs.shape) < 3:
-            one_hot = torch.zeros(*batch_inputs.shape, 10)
-            indexing_tensor = batch_inputs.unsqueeze(-1).long()
-            batch_inputs = one_hot.scatter(2, indexing_tensor, 1)
+            batch_inputs = to_one_hot(batch_inputs)
         else:
             batch_inputs = batch_inputs.unsqueeze(2)
 
@@ -120,6 +129,8 @@ def train(config):
 
         loss = loss_criterion(outputs, batch_targets)
         accuracy = calculate_accuracy(outputs, batch_targets)
+
+        accuracies.append(accuracy.item())
 
         loss.backward()
         optimizer.step()
@@ -142,6 +153,7 @@ def train(config):
             # https://github.com/pytorch/pytorch/pull/9655
             break
 
+    pickle.dump(accuracies, open(f'{filename}.p', 'wb') )
     print('Done training.')
 
 
@@ -163,8 +175,7 @@ if __name__ == "__main__":
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate')
     parser.add_argument('--train_steps', type=int, default=10000, help='Number of training steps')
     parser.add_argument('--max_norm', type=float, default=10.0)
-    # parser.add_argument('--device', type=str, default="cuda:0", help="Training device 'cpu' or 'cuda:0'")
-    parser.add_argument('--device', type=str, default="cpu", help="Training device 'cpu' or 'cuda:0'")
+    parser.add_argument('--device', type=str, default="cuda:0", help="Training device 'cpu' or 'cuda:0'")
 
     config = parser.parse_args()
 

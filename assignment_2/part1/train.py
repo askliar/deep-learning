@@ -109,10 +109,11 @@ def train(config):
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
+        batch_targets = batch_targets.to(device)
         if config.input_dim == 10 and len(batch_inputs.shape) < 3:
-            batch_inputs = to_one_hot(batch_inputs)
+            batch_inputs = to_one_hot(batch_inputs).to(device)
         else:
-            batch_inputs = batch_inputs.unsqueeze(2)
+            batch_inputs = batch_inputs.unsqueeze(2).to(device)
 
         # Only for time measurement of step through network
         t1 = time.time()

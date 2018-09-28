@@ -95,6 +95,7 @@ def train(config):
                         num_classes=config.num_classes,
                         batch_size=config.batch_size,
                         device=config.device)
+                        
     model = model.to(device)
 
     # Initialize the dataset and data loader (note the +1)
@@ -110,6 +111,7 @@ def train(config):
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         batch_targets = batch_targets.to(device)
+
         if config.input_dim == 10 and len(batch_inputs.shape) < 3:
             batch_inputs = to_one_hot(batch_inputs).to(device)
         else:

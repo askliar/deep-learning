@@ -29,8 +29,8 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         
         self.seq_length = seq_length
-        self.h_init = torch.zeros(num_hidden, 1)
-        self.c_init = torch.zeros(num_hidden, 1)
+        self.h_init = nn.Parameter(torch.zeros(num_hidden, 1), requires_grad=False)
+        self.c_init = nn.Parameter(torch.zeros(num_hidden, 1), requires_grad=False)
 
         self.w_gx = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
             num_hidden, input_dim).normal_(mean=0, std=0.0001)))

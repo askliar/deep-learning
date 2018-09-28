@@ -29,7 +29,7 @@ class VanillaRNN(nn.Module):
         super(VanillaRNN, self).__init__()
 
         self.seq_length = seq_length
-        self.h_init = torch.zeros(num_hidden, 1)
+        self.h_init = nn.Parameter(torch.zeros(num_hidden, 1), requires_grad=False)
 
         self.w_hx = nn.Parameter(nn.init.orthogonal_(torch.Tensor(
             num_hidden, input_dim).normal_(mean=0, std=0.0001)))
@@ -42,6 +42,7 @@ class VanillaRNN(nn.Module):
         self.b_p = nn.Parameter(torch.Tensor(num_classes, 1).zero_())
 
     def forward(self, x):
+
         h_t = self.h_init
         tanh = nn.Tanh()
 

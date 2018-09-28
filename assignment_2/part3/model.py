@@ -46,8 +46,9 @@ class TextGenerationModel(nn.Module):
                             hidden_size=lstm_num_hidden,
                             num_layers=lstm_num_layers,
                             dropout=dropout)
-        self.decoder = nn.Linear(
-            in_features=lstm_num_hidden, out_features=vocabulary_size)
+
+        self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
+        
         self.current_hidden = None
 
     def to_one_hot(self, input, size):

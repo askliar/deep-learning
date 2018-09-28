@@ -96,7 +96,7 @@ def train(config):
                         batch_size=config.batch_size,
                         device=config.device)
                         
-    model = model.to(device)
+    model = torch.nn.DataParallel(model).to(device)
 
     # Initialize the dataset and data loader (note the +1)
     dataset = PalindromeDataset(config.input_length+1)

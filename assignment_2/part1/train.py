@@ -78,7 +78,7 @@ def train(config):
 
     accuracies = []
 
-    filename = f'{config.model_type}_{input_length}.pkl'
+    filename = f'{config.model_type}_{config.input_length}.pkl'
 
     # Initialize the model that we are going to use
     if config.model_type == 'RNN':

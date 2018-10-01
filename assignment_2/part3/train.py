@@ -95,8 +95,7 @@ def train(config):
 
     # if model name is passed - load it from the file        
     if config.model_name is not None:
-        model.load_state_dict(torch.load(config.model_name, config.device))
-        model.current_hidden = None
+        model.load_state_dict(torch.load(config.model_name, map_location=config.device))
         model_name = config.model_name.split('/')[-1]
     else:
         txt_name = config.txt_file.split('/')[-1]
@@ -158,7 +157,6 @@ def train(config):
             examples_per_second = config.batch_size/float(t2-t1)
 
             if step % config.print_every == 0:
-
                 print("[{}] Train Step {:04}/{:04}, Batch Size = {}, Examples/Sec = {:.2f}, "
                     "Accuracy = {:.2f}, Loss = {:.3f}".format(
                         datetime.now().strftime("%Y-%m-%d %H:%M"), step,
@@ -166,44 +164,11 @@ def train(config):
                         accuracy, loss
                 ))
 
-            # sample text every sample_every iterations
-            if step % config.sample_every == 0:
-                model.eval()
-                # sample random first character to start generating text
-                if config.generation == 'start':
-                    generated_sequence = []
-                    # set random character as the first input to the generating model
-                    symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
-                    generated_sequence.append(symbol.item())
-                # feed specified input into the model to complete it afterwards
-                elif config.generation == 'complete':
-                    generated_sequence = dataset.convert_to_ix(config.input_text)
-                    input = torch.Tensor(generated_sequence).to(device)
-                    output = model(input)
-                    # set last character as the first input to the generating model 
-                    symbol = input[-1].unsqueeze(0).to(device)
-                
-                # generate seq_length of text and set each generated character as the new input
-                for i in range(config.generation_seq_length-1):
-                    output = model(symbol).squeeze()
-                    symbol = sample_single(output, sampling=config.sampling, 
-                                            temperature=config.temperature).to(device)
-                    generated_sequence.append(symbol.item())
-
-                generated_str = dataset.convert_to_string(generated_sequence)
-                print(generated_str)
-                generated_sentences.append(generated_str)
-                model.train()
-
-            if step + (step * epoch) == config.train_steps:
-                # If you receive a PyTorch data-loader error, check this bug report:
-                # https://github.com/pytorch/pytorch/pull/9655
-                print('Done training.')
-                # return to exit loop over epochs
-                return
-
             # save all the data during every save_every epoch
             if step % config.save_every == 0:
+                torch.save(model.state_dict(), os.path.join(
+                    config.model_path, f'trained_model_{model_name}.pth'))
+                    
                 with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w+') as f:
                     f.write(f'Epoch: {epoch}\n')
                     f.write('Steps:\n')
@@ -215,7 +180,42 @@ def train(config):
                     f.write('\nGenerated sentences:\n')
                     f.write("<EOF>".join(generated_sentences))
 
-                torch.save(model.state_dict(), os.path.join(config.model_path, f'trained_model_{model_name}.pth'))
+            # sample text every sample_every iterations
+            if step % config.sample_every == 0:
+                model.eval()
+                for input in config.input_text.split(";"):
+                    # sample random first character to start generating text
+                    if config.generation == 'start':
+                        generated_sequence = []
+                        # set random character as the first input to the generating model
+                        symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
+                        generated_sequence.append(symbol.item())
+                    # feed specified input into the model to complete it afterwards
+                    elif config.generation == 'complete':
+                        generated_sequence = dataset.convert_to_ix(input)
+                        input = torch.Tensor(generated_sequence).to(device)
+                        output = model(input)
+                        # set last character as the first input to the generating model 
+                        symbol = input[-1].unsqueeze(0).to(device)
+                    
+                    # generate seq_length of text and set each generated character as the new input
+                    for i in range(config.generation_seq_length-1):
+                        output = model(symbol).squeeze()
+                        symbol = sample_single(output, sampling=config.sampling, 
+                                                temperature=config.temperature).to(device)
+                        generated_sequence.append(symbol.item())
+
+                    generated_str = dataset.convert_to_string(generated_sequence)
+                    print(generated_str)
+                    generated_sentences.append(generated_str)
+                model.train()
+
+            if step + (step * epoch) == config.train_steps:
+                # If you receive a PyTorch data-loader error, check this bug report:
+                # https://github.com/pytorch/pytorch/pull/9655
+                print('Done training.')
+                # return to exit loop over epochs
+                return
 
     print('Done training.')
 

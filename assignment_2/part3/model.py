@@ -82,8 +82,8 @@ class TextGenerationModel(nn.Module):
 
             # reshape hidden to correct dimension 
             if len(hidden[0].shape) > 2:
-                hidden = (hidden[0][:, -1, :].unsqueeze(1),
-                          hidden[1][:, -1, :].unsqueeze(1))
+                hidden = (hidden[0][:, -1, :].unsqueeze(1).contiguous(),
+                          hidden[1][:, -1, :].unsqueeze(1).contiguous())
             self.current_hidden = hidden
         else:
             output, hidden = self.lstm(encoded)

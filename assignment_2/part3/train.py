@@ -93,7 +93,7 @@ def train(config):
         model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
         model_name = config.model_name
     else:
-        model_name = f'{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
+        model_name = f'{config.txt_file}_{config.sampling}_{config.temperature}_{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
     
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()
@@ -172,6 +172,7 @@ def train(config):
                     symbol = sample_single(output, sampling=config.sampling, 
                                             temperature=config.temperature).to(device)
                     generated_sequence.append(symbol.item())
+
                 generated_str = dataset.convert_to_string(generated_sequence)
                 print(generated_str)
                 generated_sentences.append(generated_str)
@@ -223,7 +224,7 @@ if __name__ == "__main__":
     parser.add_argument('--learning_rate_step', type=int, default=5000, help='Learning rate step')
     parser.add_argument('--dropout_keep_prob', type=float, default=1.0, help='Dropout keep probability')
 
-    parser.add_argument('--train_steps', type=int, default=1e6, help='Number of training steps')
+    parser.add_argument('--train_steps', type=int, default=5000, help='Number of training steps')
     parser.add_argument('--max_norm', type=float, default=5.0, help='--')
 
     # Misc params
@@ -243,7 +244,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--generation', type=str, default='start', choices=['start', 'complete'], 
                         help='Whether to generate text from a random first letter or complete sentence.')
-    parser.add_argument('--generation_seq_length', type=int, default=500, help='Length of a generated sequence')
+    parser.add_argument('--generation_seq_length', type=int, default=30, help='Length of a generated sequence')
     parser.add_argument('--input_text', type=str, default=' ', help='Text to finish using pre-trained lstm.')
 
     config = parser.parse_args()

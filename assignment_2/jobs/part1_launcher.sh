@@ -8,6 +8,6 @@ do
 	do
         temp=""$model"_"$size""
         echo "$temp"
-        qsub -v MODEL_TYPE="$model",INPUT_LENGTH="$size" single_job_script.sh
+        qsub -v MODEL_TYPE="$model",INPUT_LENGTH="$size" part1_job_script.sh
     done
 done

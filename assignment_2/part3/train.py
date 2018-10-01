@@ -89,12 +89,15 @@ def train(config):
                                 vocabulary_size=dataset.vocab_size,
                                 lstm_num_hidden=config.lstm_num_hidden,
                                 lstm_num_layers=config.lstm_num_layers,
-                                dropout=dropout, embedding=config.embedding).to(device)
+                                dropout=dropout, 
+                                embedding=config.embedding,
+                                device=config.device).to(device)
 
     # if model name is passed - load it from the file        
     if config.model_name is not None:
-        model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
-        model_name = config.model_name
+        model.load_state_dict(torch.load(config.model_name, config.device))
+        model.current_hidden = None
+        model_name = config.model_name.split('/')[1]
     else:
         txt_name = config.txt_file.split('/')[1]
         model_name = f'{txt_name}_{config.sampling}_{config.temperature}_{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
@@ -116,6 +119,8 @@ def train(config):
     losses = []
     accuracies = []
     generated_sentences = []
+
+    model.train()
 
     # don't stop if the whole book has been sweeped (especially useful for short texts)
     for epoch in range(10):
@@ -190,12 +195,12 @@ def train(config):
                 generated_sentences.append(generated_str)
                 model.train()
 
-            # if step + (step * epoch) == config.train_steps:
-            #     # If you receive a PyTorch data-loader error, check this bug report:
-            #     # https://github.com/pytorch/pytorch/pull/9655
-            #     print('Done training.')
-            #     # return to exit loop over epochs
-            #     return
+            if step + (step * epoch) == config.train_steps:
+                # If you receive a PyTorch data-loader error, check this bug report:
+                # https://github.com/pytorch/pytorch/pull/9655
+                print('Done training.')
+                # return to exit loop over epochs
+                return
 
             # save all the data during every save_every epoch
             if step % config.save_every == 0:

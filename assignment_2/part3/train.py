@@ -83,12 +83,13 @@ def train(config):
     dropout = 1.0 - config.dropout_keep_prob
 
     # Initialize the model that we are going to use
-    model = torch.nn.DataParallel(TextGenerationModel(batch_size=config.batch_size,
-                                                        seq_length=config.seq_length,
-                                                        vocabulary_size=dataset.vocab_size,
-                                                        lstm_num_hidden=config.lstm_num_hidden,
-                                                        lstm_num_layers=config.lstm_num_layers,
-                                                        dropout=dropout, embedding=config.embedding).to(device))
+    model = TextGenerationModel(batch_size=config.batch_size,
+                                seq_length=config.seq_length,
+                                vocabulary_size=dataset.vocab_size,
+                                lstm_num_hidden=config.lstm_num_hidden,
+                                lstm_num_layers=config.lstm_num_layers,
+                                dropout=dropout, embedding=config.embedding).to(device)
+                                
     if config.model_name is not None:
         model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
         model_name = config.model_name

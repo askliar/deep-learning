@@ -200,7 +200,7 @@ def train(config):
                     
                     # generate seq_length of text and set each generated character as the new input
                     for i in range(config.generation_seq_length-1):
-                        output = model(symbol).squeeze()
+                        output = model(symbol).squeeze().contiguous()
                         symbol = sample_single(output, sampling=config.sampling, 
                                                 temperature=config.temperature).to(device)
                         generated_sequence.append(symbol.item())

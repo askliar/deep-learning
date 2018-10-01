@@ -156,7 +156,7 @@ def train(config):
             # https://github.com/pytorch/pytorch/pull/9655
             break
 
-    pickle.dump(accuracies, open(f'{filename}.p', 'wb') )
+    pickle.dump(accuracies, open(f'{filename}', 'wb') )
     print('Done training.')
 
 

@@ -180,7 +180,7 @@ def train(config):
                 break
 
             if step % config.save_every == 0:
-                with open('logs.txt', 'w') as f:
+                with open(os.path.join(config.summary_path, 'logs.txt'), 'w') as f:
                     f.write(f'Epoch: {epoch}\n')
                     f.write('Steps:\n')
                     f.write(str(steps))
@@ -191,7 +191,7 @@ def train(config):
                     f.write('\nGenerated sentences:\n')
                     f.write("<EOF>".join(generated_sentences))
 
-                torch.save(model.state_dict(), 'trained_model.pth')
+                torch.save(model.state_dict(), os.path.join(config.model_path, 'trained_model.pth'))
 
     print('Done training.')
 

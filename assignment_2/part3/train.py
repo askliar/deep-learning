@@ -118,7 +118,7 @@ def train(config):
     generated_sentences = []
 
     # don't stop if the whole book has been sweeped (especially useful for short texts)
-    for epoch in range(25):
+    for epoch in range(10):
         for step, (batch_inputs, batch_targets) in enumerate(data_loader):
             steps.append(step)
             # Only for time measurement of step through network
@@ -190,12 +190,12 @@ def train(config):
                 generated_sentences.append(generated_str)
                 model.train()
 
-            if step + (step * epoch) == config.train_steps:
-                # If you receive a PyTorch data-loader error, check this bug report:
-                # https://github.com/pytorch/pytorch/pull/9655
-                print('Done training.')
-                # return to exit loop over epochs
-                return
+            # if step + (step * epoch) == config.train_steps:
+            #     # If you receive a PyTorch data-loader error, check this bug report:
+            #     # https://github.com/pytorch/pytorch/pull/9655
+            #     print('Done training.')
+            #     # return to exit loop over epochs
+            #     return
 
             # save all the data during every save_every epoch
             if step % config.save_every == 0:

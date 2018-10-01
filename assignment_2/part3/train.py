@@ -94,7 +94,8 @@ def train(config):
         model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
         model_name = config.model_name
     else:
-        model_name = f'{config.txt_file}_{config.sampling}_{config.temperature}_{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
+        txt_name = config.txt_file.split('/')[1]
+        model_name = f'{txt_name}_{config.sampling}_{config.temperature}_{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
     
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()

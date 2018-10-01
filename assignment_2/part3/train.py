@@ -183,7 +183,7 @@ def train(config):
             # sample text every sample_every iterations
             if step % config.sample_every == 0:
                 model.eval()
-                for input in config.input_text.split(";"):
+                for temp in config.input_text.split(";"):
                     # sample random first character to start generating text
                     if config.generation == 'start':
                         generated_sequence = []
@@ -192,7 +192,7 @@ def train(config):
                         generated_sequence.append(symbol.item())
                     # feed specified input into the model to complete it afterwards
                     elif config.generation == 'complete':
-                        generated_sequence = dataset.convert_to_ix(input)
+                        generated_sequence = dataset.convert_to_ix(temp)
                         input = torch.Tensor(generated_sequence).to(device)
                         output = model(input)
                         # set last character as the first input to the generating model 
@@ -200,7 +200,7 @@ def train(config):
                     
                     # generate seq_length of text and set each generated character as the new input
                     for i in range(config.generation_seq_length-1):
-                        output = model(symbol).squeeze().contiguous()
+                        output = model(symbol).squeeze()
                         symbol = sample_single(output, sampling=config.sampling, 
                                                 temperature=config.temperature).to(device)
                         generated_sequence.append(symbol.item())

@@ -182,7 +182,8 @@ def train(config):
             if step == config.train_steps:
                 # If you receive a PyTorch data-loader error, check this bug report:
                 # https://github.com/pytorch/pytorch/pull/9655
-                break
+                print('Done training.')
+                return
 
             if step % config.save_every == 0:
                 with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w') as f:

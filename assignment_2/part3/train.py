@@ -186,7 +186,7 @@ def train(config):
                 return
 
             if step % config.save_every == 0:
-                with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w') as f:
+                with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w+') as f:
                     f.write(f'Epoch: {epoch}\n')
                     f.write('Steps:\n')
                     f.write(str(steps))

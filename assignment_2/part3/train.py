@@ -31,44 +31,8 @@ from torch.utils.data import DataLoader
 
 from part3.dataset import TextDataset
 from part3.model import TextGenerationModel
-
+from utilities import *
 ################################################################################
-
-def calculate_accuracy(predictions, targets):
-    """
-    Computes the prediction accuracy, i.e. the average of correct predictions
-    of the network.
-
-    Args:
-    predictions: 2D float array of size [batch_size, n_classes]
-    labels: 2D int array of size [batch_size, n_classes]
-            with one-hot encoding. Ground truth labels for
-            each sample in the batch
-    Returns:
-    accuracy: scalar float, the accuracy of predictions,
-                i.e. the average correct predictions over the whole batch
-
-    TODO:
-    Implement accuracy computation.
-    """
-
-    _, predictions_indices = predictions.max(2)
-    
-    accuracy = (predictions_indices == targets).float().mean()
-
-    return accuracy
-
-# sample single character either using greedy approach
-# or from categorical distribution with specified temperature
-def sample_single(x, sampling='greedy', temperature=1.0):
-    if sampling == 'greedy':
-        output = torch.max(x, 0)[1].unsqueeze(0)
-    elif sampling == 'random':
-        if temperature > 0.0:
-            x = x/temperature
-        distr = torch.distributions.Categorical(logits=x)
-        output = distr.sample(sample_shape=(1, 1))
-    return output
 
 def train(config):
 
@@ -95,7 +59,7 @@ def train(config):
 
     # if model name is passed - load it from the file        
     if config.model_name is not None:
-        model.load_state_dict(torch.load(config.model_name, map_location=config.device))
+        model.load_state_dict(torch.load(os.path.join(config.model_path, config.model_name), map_location=config.device))
         model_name = config.model_name.split('/')[-1]
     else:
         txt_name = config.txt_file.split('/')[-1]
@@ -166,8 +130,12 @@ def train(config):
 
             # save all the data during every save_every epoch
             if step % config.save_every == 0:
-                torch.save(model.state_dict(), os.path.join(
-                    config.model_path, f'trained_model_{model_name}.pth'))
+                if config.model_name:
+                    temp_path = os.path.join(config.model_path, f'{model_name}')
+                else:
+                    temp_path = os.path.join(config.model_path, f'trained_model_{model_name}.pth')
+
+                torch.save(model.state_dict(), temp_path)
                     
                 with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w+') as f:
                     f.write(f'Epoch: {epoch}\n')
@@ -183,33 +151,32 @@ def train(config):
             # sample text every sample_every iterations
             if step % config.sample_every == 0:
                 model.eval()
-                for temp in config.input_text.split(";"):
-                    # sample random first character to start generating text
-                    if config.generation == 'start':
-                        model.current_hidden = None
-                        generated_sequence = []
-                        # set random character as the first input to the generating model
-                        symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
-                        generated_sequence.append(symbol.item())
-                    # feed specified input into the model to complete it afterwards
-                    elif config.generation == 'complete':
-                        model.current_hidden = None
-                        generated_sequence = dataset.convert_to_ix(temp)
-                        input = torch.Tensor(generated_sequence).to(device)
-                        output = model(input)
-                        # set last character as the first input to the generating model 
-                        symbol = input[-1].unsqueeze(0).to(device)
-                    
-                    # generate seq_length of text and set each generated character as the new input
-                    for i in range(config.generation_seq_length-1):
-                        output = model(symbol).squeeze()
-                        symbol = sample_single(output, sampling=config.sampling, 
-                                                temperature=config.temperature).to(device)
-                        generated_sequence.append(symbol.item())
+                # sample random first character to start generating text
+                if config.generation == 'start':
+                    model.current_hidden = None
+                    generated_sequence = []
+                    # set random character as the first input to the generating model
+                    symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
+                    generated_sequence.append(symbol.item())
+                # feed specified input into the model to complete it afterwards
+                elif config.generation == 'complete':
+                    model.current_hidden = None
+                    generated_sequence = dataset.convert_to_ix(config.input_text)
+                    input = torch.Tensor(generated_sequence).to(device)
+                    output = model(input)
+                    # set last character as the first input to the generating model 
+                    symbol = input[-1].unsqueeze(0).to(device)
+                
+                # generate seq_length of text and set each generated character as the new input
+                for i in range(config.generation_seq_length-1):
+                    output = model(symbol).squeeze()
+                    symbol = sample_single(output, sampling=config.sampling, 
+                                            temperature=config.temperature).to(device)
+                    generated_sequence.append(symbol.item())
 
-                    generated_str = dataset.convert_to_string(generated_sequence)
-                    print(generated_str)
-                    generated_sentences.append(generated_str)
+                generated_str = dataset.convert_to_string(generated_sequence)
+                print(generated_str)
+                generated_sentences.append(generated_str)
                 model.train()
 
             if step + (step * epoch) == config.train_steps:

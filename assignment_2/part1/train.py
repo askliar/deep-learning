@@ -36,7 +36,6 @@ from part1.lstm import LSTM
 
 ################################################################################
 
-
 def calculate_accuracy(predictions, targets):
     """
     Computes the prediction accuracy, i.e. the average of correct predictions
@@ -61,6 +60,7 @@ def calculate_accuracy(predictions, targets):
 
     return accuracy
 
+# convert input to one hot vector
 def to_one_hot(input):
     one_hot = torch.zeros(*input.shape, 10)
     indexing_tensor = input.unsqueeze(-1).long()
@@ -112,6 +112,7 @@ def train(config):
 
         batch_targets = batch_targets.to(device)
 
+        # if input_dim == 10 - convert to one-hot, otherwise - use as it is
         if config.input_dim == 10 and len(batch_inputs.shape) < 3:
             batch_inputs = to_one_hot(batch_inputs).to(device)
         else:

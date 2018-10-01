@@ -58,7 +58,8 @@ def calculate_accuracy(predictions, targets):
 
     return accuracy
 
-
+# sample single character either using greedy approach
+# or from categorical distribution with specified temperature
 def sample_single(x, sampling='greedy', temperature=1.0):
     if sampling == 'greedy':
         output = torch.max(x, 0)[1].unsqueeze(0)
@@ -89,7 +90,8 @@ def train(config):
                                 lstm_num_hidden=config.lstm_num_hidden,
                                 lstm_num_layers=config.lstm_num_layers,
                                 dropout=dropout, embedding=config.embedding).to(device)
-                                
+
+    # if model name is passed - load it from the file        
     if config.model_name is not None:
         model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
         model_name = config.model_name
@@ -97,7 +99,7 @@ def train(config):
         txt_name = config.txt_file.split('/')[1]
         model_name = f'{txt_name}_{config.sampling}_{config.temperature}_{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
     
-    # Setup the loss and optimizer
+    # Setup the loss, optimizer and learning rate scheduler
     loss_criterion = torch.nn.CrossEntropyLoss()
     if config.optimizer == 'rmsprop':
         optimizer = torch.optim.RMSprop(model.parameters(), lr=config.learning_rate, 
@@ -109,11 +111,13 @@ def train(config):
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=config.learning_rate_step,
                                                 gamma=config.learning_rate_decay)
 
+    # create arrays for saving data
     steps = []
     losses = []
     accuracies = []
     generated_sentences = []
 
+    # don't stop if the whole book has been sweeped (especially useful for short texts)
     for epoch in range(25):
         for step, (batch_inputs, batch_targets) in enumerate(data_loader):
             steps.append(step)
@@ -157,18 +161,24 @@ def train(config):
                         accuracy, loss
                 ))
 
+            # sample text every sample_every iterations
             if step % config.sample_every == 0:
                 model.eval()
+                # sample random first character to start generating text
                 if config.generation == 'start':
                     generated_sequence = []
+                    # set random character as the first input to the generating model
                     symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
                     generated_sequence.append(symbol.item())
+                # feed specified input into the model to complete it afterwards
                 elif config.generation == 'complete':
                     generated_sequence = dataset.convert_to_ix(config.input_text)
                     input = torch.Tensor(generated_sequence).to(device)
                     output = model(input)
+                    # set last character as the first input to the generating model 
                     symbol = input[-1].unsqueeze(0).to(device)
-                    
+                
+                # generate seq_length of text and set each generated character as the new input
                 for i in range(config.generation_seq_length-1):
                     output = model(symbol).squeeze()
                     symbol = sample_single(output, sampling=config.sampling, 
@@ -180,12 +190,14 @@ def train(config):
                 generated_sentences.append(generated_str)
                 model.train()
 
-            if step == config.train_steps:
+            if step + (step * epoch) == config.train_steps:
                 # If you receive a PyTorch data-loader error, check this bug report:
                 # https://github.com/pytorch/pytorch/pull/9655
                 print('Done training.')
+                # return to exit loop over epochs
                 return
 
+            # save all the data during every save_every epoch
             if step % config.save_every == 0:
                 with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w+') as f:
                     f.write(f'Epoch: {epoch}\n')

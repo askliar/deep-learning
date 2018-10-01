@@ -29,6 +29,8 @@ class VanillaRNN(nn.Module):
         super(VanillaRNN, self).__init__()
 
         self.seq_length = seq_length
+
+        # set hidden init as parameter to convert to cuda together with the model
         self.h_init = nn.Parameter(torch.zeros(num_hidden, 1), requires_grad=False)
 
         self.w_hx = nn.Parameter(nn.init.orthogonal_(torch.Tensor(

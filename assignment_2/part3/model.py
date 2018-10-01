@@ -36,6 +36,7 @@ class TextGenerationModel(nn.Module):
         self.vocabulary_size = vocabulary_size
         self.device = torch.device(device)
 
+        # use either embedding or one-hot encoding
         if embedding:
             embedding_dim = lstm_num_hidden
             self.encoder = nn.Embedding(num_embeddings=vocabulary_size, 
@@ -50,8 +51,10 @@ class TextGenerationModel(nn.Module):
 
         self.decoder = nn.Linear(in_features=lstm_num_hidden, out_features=vocabulary_size)
         
+        # used for passing previous hidden state during generation
         self.current_hidden = None
 
+    # convert input to one hot vector
     def to_one_hot(self, input, size):
         one_hot = torch.zeros(*input.shape, size).to(self.device)
         indexing_tensor = input.unsqueeze(-1).long()
@@ -59,9 +62,11 @@ class TextGenerationModel(nn.Module):
         return batch_inputs
 
     def forward(self, x):
+        # if single character is passed, convert to (1x1)
         if len(x.shape) < 2:
             x = x.unsqueeze(0)
         
+        # embed the input using embedding or one-hot encoding
         if self.embedding:
             encoded = self.encoder(x)
         else:
@@ -69,8 +74,13 @@ class TextGenerationModel(nn.Module):
 
         self.lstm.flatten_parameters()
 
+        # if not training - we are generating, so, save hidden state for the next step
+        # otherwise - don't save hidden
         if not self.training:
+            # feed embedded input into lstm
             output, hidden = self.lstm(encoded, self.current_hidden)
+
+            # reshape hidden to correct dimension 
             if len(hidden[0].shape) > 2:
                 hidden = (hidden[0][:, -1, :].unsqueeze(1),
                           hidden[1][:, -1, :].unsqueeze(1))
@@ -79,6 +89,7 @@ class TextGenerationModel(nn.Module):
             output, hidden = self.lstm(encoded)
             self.current_hidden = None
 
+        # apply linear layer to decode
         decoded = self.decoder(output)
 
         return decoded

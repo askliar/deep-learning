@@ -29,6 +29,8 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
         
         self.seq_length = seq_length
+
+        # set hidden inits as parameters to convert to cuda together with the model
         self.h_init = nn.Parameter(torch.zeros(num_hidden, 1), requires_grad=False)
         self.c_init = nn.Parameter(torch.zeros(num_hidden, 1), requires_grad=False)
 

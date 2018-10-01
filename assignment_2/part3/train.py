@@ -91,7 +91,10 @@ def train(config):
                                                         dropout=dropout, embedding=config.embedding).to(device))
     if config.model_name is not None:
         model = torch.load(config.model_name, map_location=lambda storage, location: 'cpu')
-
+        model_name = config.model_name
+    else:
+        model_name = f'{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
+    
     # Setup the loss and optimizer
     loss_criterion = torch.nn.CrossEntropyLoss()
     if config.optimizer == 'rmsprop':
@@ -180,7 +183,7 @@ def train(config):
                 break
 
             if step % config.save_every == 0:
-                with open(os.path.join(config.summary_path, 'logs.txt'), 'w') as f:
+                with open(os.path.join(config.summary_path, f'logs_{model_name}.txt'), 'w') as f:
                     f.write(f'Epoch: {epoch}\n')
                     f.write('Steps:\n')
                     f.write(str(steps))
@@ -191,7 +194,7 @@ def train(config):
                     f.write('\nGenerated sentences:\n')
                     f.write("<EOF>".join(generated_sentences))
 
-                torch.save(model.state_dict(), os.path.join(config.model_path, 'trained_model.pth'))
+                torch.save(model.state_dict(), os.path.join(config.model_path, f'trained_model_{model_name}.pth'))
 
     print('Done training.')
 
@@ -224,12 +227,12 @@ if __name__ == "__main__":
     parser.add_argument('--max_norm', type=float, default=5.0, help='--')
 
     # Misc params
-    parser.add_argument('--summary_path', type=str, default="./summaries/", help='Output path for summaries')
+    parser.add_argument('--summary_path', type=str, default="../summaries/", help='Output path for summaries')
     parser.add_argument('--print_every', type=int, default=5, help='How often to print training progress')
     parser.add_argument('--sample_every', type=int, default=100, help='How often to sample from the model')
 
     parser.add_argument('--save_every', type=int, default=500, help='How often to save the model and logs.')
-    parser.add_argument('--model_path', type=str, default='./checkpoints/', help='Output path for saving model')
+    parser.add_argument('--model_path', type=str, default='../checkpoints/', help='Output path for saving model')
     parser.add_argument('--optimizer', type=str, default='rmsprop', choices=['adam', 'rmsprop'], 
                         help='Optimizer to use for training.')
     parser.add_argument('--model_name', type=str, default=None, help='Model to load from checkpoints.')

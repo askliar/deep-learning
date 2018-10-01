@@ -193,8 +193,7 @@ def train(config):
                     # feed specified input into the model to complete it afterwards
                     elif config.generation == 'complete':
                         generated_sequence = dataset.convert_to_ix(temp)
-                        input = torch.Tensor(generated_sequence).to(
-                            device).contiguous()
+                        input = torch.Tensor(generated_sequence).to(device)
                         output = model(input)
                         # set last character as the first input to the generating model 
                         symbol = input[-1].unsqueeze(0).to(device)

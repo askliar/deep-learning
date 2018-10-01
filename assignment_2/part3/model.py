@@ -80,7 +80,7 @@ class TextGenerationModel(nn.Module):
             # feed embedded input into lstm
             output, hidden = self.lstm(encoded, self.current_hidden)
 
-            # reshape hidden to correct dimension 
+            # save last hidden
             if len(hidden[0].shape) > 2:
                 hidden = (hidden[0][:, -1, :].unsqueeze(1).contiguous(),
                           hidden[1][:, -1, :].unsqueeze(1).contiguous())

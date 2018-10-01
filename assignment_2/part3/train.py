@@ -186,12 +186,14 @@ def train(config):
                 for temp in config.input_text.split(";"):
                     # sample random first character to start generating text
                     if config.generation == 'start':
+                        model.current_hidden = None
                         generated_sequence = []
                         # set random character as the first input to the generating model
                         symbol = torch.randint(low=0, high=dataset.vocab_size, size=(1, )).long().to(device)
                         generated_sequence.append(symbol.item())
                     # feed specified input into the model to complete it afterwards
                     elif config.generation == 'complete':
+                        model.current_hidden = None
                         generated_sequence = dataset.convert_to_ix(temp)
                         input = torch.Tensor(generated_sequence).to(device)
                         output = model(input)

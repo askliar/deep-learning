@@ -34,6 +34,7 @@ class TextGenerationModel(nn.Module):
         self.seq_length = seq_length
         self.embedding = embedding
         self.vocabulary_size = vocabulary_size
+        self.device = torch.device(device)
 
         if embedding:
             embedding_dim = lstm_num_hidden
@@ -52,7 +53,7 @@ class TextGenerationModel(nn.Module):
         self.current_hidden = None
 
     def to_one_hot(self, input, size):
-        one_hot = torch.zeros(*input.shape, size)
+        one_hot = torch.zeros(*input.shape, size).to(self.device)
         indexing_tensor = input.unsqueeze(-1).long()
         batch_inputs = one_hot.scatter(2, indexing_tensor, 1)
         return batch_inputs

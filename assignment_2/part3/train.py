@@ -97,9 +97,9 @@ def train(config):
     if config.model_name is not None:
         model.load_state_dict(torch.load(config.model_name, config.device))
         model.current_hidden = None
-        model_name = config.model_name.split('/')[1]
+        model_name = config.model_name.split('/')[-1]
     else:
-        txt_name = config.txt_file.split('/')[1]
+        txt_name = config.txt_file.split('/')[-1]
         model_name = f'{txt_name}_{config.sampling}_{config.temperature}_{config.optimizer}_{config.batch_size}_{dropout}_{config.learning_rate}'
     
     # Setup the loss, optimizer and learning rate scheduler

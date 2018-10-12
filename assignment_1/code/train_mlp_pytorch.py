@@ -98,7 +98,7 @@ def train():
         dnn_hidden_units = [int(dnn_hidden_unit_) for dnn_hidden_unit_ in dnn_hidden_units]
     else:
         dnn_hidden_units = []
-    
+
     ########################
     # PUT YOUR CODE HERE  #
     #######################
@@ -140,10 +140,10 @@ def train():
     n_inputs = 3 * 32 * 32
 
     mlp = nn.DataParallel(MLP(n_inputs, dnn_hidden_units,
-                              n_classes).to(device))  # dnn_dropouts)
+                                n_classes).to(device))  # dnn_dropouts)
 
     optimizer = torch.optim.SGD(mlp.parameters(), lr=lr)
-    
+
     # dynamically choose optimizer for the experiments
     # optimizer = get_optimizer(FLAGS.optimizer, mlp, lr) # weight_decay=weight_decay, momentum=momentum)
     loss_criterion = nn.CrossEntropyLoss()
@@ -244,7 +244,7 @@ def train():
         #     plt.show()
         #
         #     plt.pause(0.00001)
-    
+
     # save losses and accuracies to a file, specific for each experiment
     # with open(f'output_{batch_size}_{str(dnn_hidden_units)}_{lr}_{weight_decay}_{FLAGS.optimizer}_{momentum}_{str(dnn_dropouts)}.txt', 'w') as f:
     #     f.write(f'Test steps: \n{test_steps}')

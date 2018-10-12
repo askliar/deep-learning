@@ -12,6 +12,8 @@ class Encoder(nn.Module):
 
     def __init__(self, hidden_dim=500, z_dim=20):
         super().__init__()
+        self.z_dim = z_dim
+        self.hidden_dim = hidden_dim
 
     def forward(self, input):
         """
@@ -21,7 +23,7 @@ class Encoder(nn.Module):
         that any constraints are enforced.
         """
         mean, std = None, None
-        raise NotImplementedError()
+        
 
         return mean, std
 

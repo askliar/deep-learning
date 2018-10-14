@@ -1,8 +1,0 @@
-Epoch: 0
-Steps:
-[0]
-Losses:
-[9.408737182617188]
-Accuracies:
-[0.008854166604578495]
-Generated sentences:

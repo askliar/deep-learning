@@ -131,7 +131,7 @@ class BMNIST(data.Dataset):
         return fmt_str
 
 
-def bmnist(root='./data/', batch_size=128, download=True):
+def bmnist(root='./data/', batch_size=128, download=True, pin_memory=False):
 
     data_transforms = transforms.Compose([transforms.ToTensor()])
 
@@ -140,10 +140,13 @@ def bmnist(root='./data/', batch_size=128, download=True):
     test_set = BMNIST(root, 'test', data_transforms, download)
 
     trainloader = torch.utils.data.DataLoader(train_set, batch_size=batch_size,
-                                              shuffle=True, num_workers=4)
+                                              shuffle=True, num_workers=4,
+                                              pin_memory=pin_memory)
     valloader = torch.utils.data.DataLoader(val_set, batch_size=batch_size,
-                                            shuffle=False, num_workers=10)
+                                            shuffle=False, num_workers=10,
+                                            pin_memory=pin_memory)
     testloader = torch.utils.data.DataLoader(test_set, batch_size=batch_size,
-                                             shuffle=False, num_workers=10)
+                                             shuffle=False, num_workers=10,
+                                             pin_memory=pin_memory)
 
     return trainloader, valloader, testloader

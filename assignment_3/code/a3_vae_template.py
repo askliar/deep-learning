@@ -1,12 +1,16 @@
 import argparse
 import os
-import math
+import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchvision.utils import save_image
+
+from scipy.stats import norm
+
 import matplotlib.pyplot as plt
-from torchvision.utils import make_grid, save_image
+plt.switch_backend('agg')
 
 from datasets.bmnist import bmnist
 
@@ -30,10 +34,10 @@ class Encoder(nn.Module):
         Returns mean and std with shape [batch_size, z_dim]. Make sure
         that any constraints are enforced.
         """
-        hidden = F.relu(self.i2h(input))
-        mean, std = self.h2m(hidden), self.h2s(hidden)
+        hidden = torch.relu(self.i2h(input))
+        mean, logvar = self.h2m(hidden), self.h2s(hidden)
         
-        return mean, std
+        return mean, logvar
 
 
 class Decoder(nn.Module):
@@ -49,8 +53,8 @@ class Decoder(nn.Module):
 
         Returns mean with shape [batch_size, 784].
         """
-        hidden = F.relu(self.z2h(input))
-        mean = F.sigmoid(self.h2m(hidden))
+        hidden = torch.relu(self.z2h(input))
+        mean = torch.sigmoid(self.h2m(hidden))
 
         return mean
 
@@ -70,29 +74,29 @@ class VAE(nn.Module):
         negative average elbo for the given batch.
         """
         batch_dim = input.shape[0]
-        mean, std = self.encoder(input)
+        mean, logvar = self.encoder(input)
 
         eps = torch.randn_like(mean)
-        z = eps * std + mean
+        z = eps * torch.exp(0.5 * logvar) + mean
 
         x_hat = self.decoder(z)
 
-        var = std.pow(2)
-        kl_divergence = (-0.5 * torch.sum(1 + var.log() - mean.pow(2) - var))
+        kl_divergence = -0.5 * torch.sum(1 + logvar - mean.pow(2) - torch.exp(logvar))
+        binary_cross_entropy = F.binary_cross_entropy(x_hat, input, reduction='sum')
 
-        binary_cross_entropy = F.binary_cross_entropy(
-            x_hat, input, size_average=False)
-        average_negative_elbo = kl_divergence + binary_cross_entropy
+        # average loss over the batches
+        average_negative_elbo = (kl_divergence + binary_cross_entropy)/batch_dim
+
         return average_negative_elbo
 
-    def sample(self, n_samples):
+    def sample(self, n_samples=None, z_samples=None):
         """
         Sample n_samples from the model. Return both the sampled images
         (from bernoulli) and the means for these bernoullis (as these are
         used to plot the data manifold).
         """
-
-        z_samples = torch.randn(n_samples, self.z_dim)
+        if n_samples is not None and z_samples is None:
+            z_samples = torch.randn(n_samples, self.z_dim).to(device)
         means = self.decoder(z_samples)
         sampled_ims, im_means = torch.bernoulli(means), means
 
@@ -119,7 +123,8 @@ def epoch_iter(model, data, optimizer):
             elbo = model(input)
 
         average_epoch_elbo += elbo.item()
-        average_epoch_elbo /= len(data)
+
+    average_epoch_elbo /= len(data)
     return average_epoch_elbo
 
 
@@ -150,9 +155,7 @@ def save_elbo_plot(train_curve, val_curve, filename):
 
 
 def main():
-    data_dir = 'generated_images'
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
+    os.makedirs(f'images/vae/{ARGS.zdim}', exist_ok=True)
 
     pin_memory = True if torch.cuda.is_available() else False
     data = bmnist(pin_memory=pin_memory)[:2]  # ignore test split
@@ -171,23 +174,26 @@ def main():
         #  Add functionality to plot samples from model during training.
         #  You can use the make_grid functioanlity that is already imported.
         # --------------------------------------------------------------------
-        samples, _ = model.sample(25)
+        samples, _ = model.sample(n_samples = 25)
         samples = samples.view(25, 1, 28, 28)
-        grid = make_grid(samples, nrow=5)
-        save_image(grid, 
-            os.path.join(data_dir, 
-                f'{ARGS.zdim}_{epoch}_{train_elbo}_{val_elbo}_samples.eps')
+        save_image(samples, os.path.join(f'images/vae/{ARGS.zdim}',
+            f'{epoch}_{train_elbo}_{val_elbo}_samples.eps'),
+                nrow=5, normalize=True
         )
-    # --------------------------------------------------------------------
-    #  Add functionality to plot the learned data manifold after
-    #  if required (i.e., if zdim == 2). You can use the make_grid
-    #  functionality that is already imported.
-    # --------------------------------------------------------------------
-    # if ARGS.zdim == 2:
-    #     _, means = model.sample(25)
-    #     grid = make_grid(means, nrow=5)
-    #     save_image(grid, os.path.join(data_dir, f'{epoch}_{train_elbo}_{val_elbo}_latent.eps'))
-    save_elbo_plot(train_curve, val_curve, 'elbo.pdf')
+
+    if ARGS.zdim == 2:
+        # Display a 2D manifold of the digits
+
+        # Construct grid of latent variable values
+        grid = np.meshgrid(norm.ppf(np.linspace(0.00001, 1.0, 10, endpoint=False)), 
+                           norm.ppf(np.linspace(0.00001, 1.0, 10, endpoint=False)))
+        cartesian_grid = torch.FloatTensor(np.array(grid).T.reshape((-1, 2))).to(device)
+        _, means = model.sample(z_samples = cartesian_grid)
+        save_image(means.view(-1, 1, 28, 28), 
+                   os.path.join(f'images/vae/{ARGS.zdim}', f'latent.eps'),
+            nrow=10, normalize=True
+        )
+    save_elbo_plot(train_curve, val_curve, f'elbo_{ARGS.zdim}.pdf')
 
 
 if __name__ == "__main__":

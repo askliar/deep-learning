@@ -7,7 +7,7 @@ Labs of the [Deep Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoe
 
 ## Labs
 
-##### Lab 1
+#### Lab 1
 
 [Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_1/assignment_1.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_1/Skliar_11636785_hw1.pdf)
 
@@ -18,7 +18,7 @@ Goal of this assignment is to learn how to implement and train basic neural arch
 - In order to learn how to implement custom operations in PyTorch, in next task we reimplemented a batch-normalization layer.
 - Last part aims at implementing a simple CNN in PyTorch.
 
-##### Lab 2
+#### Lab 2
 
 [Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_2/assignment_2.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_2/Skliar_11636785_hw2.pdf)
 
@@ -41,7 +41,7 @@ The assignment consists of three parts:
 |52800 | **\\**'s long money," reC.B.n that t |
 |70400 | **y** must have dreads everything|
 
-##### Lab 3
+#### Lab 3
 
 [Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_3/assignment_3.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_2/Skliar_11636785_hw3.pdf)
 

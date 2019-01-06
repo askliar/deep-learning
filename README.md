@@ -5,8 +5,6 @@
 
 Labs of the [Deep Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoek-vak/vak/63164) course of the MSc in Artificial Intelligence at the University of Amsterdam.
 
-## Labs
-
 #### Lab 1
 
 [Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_1/assignment_1.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_1/Skliar_11636785_hw1.pdf)

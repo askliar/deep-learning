@@ -7,7 +7,7 @@ Labs of the [Deep Learning](http://studiegids.uva.nl/xmlpages/page/2018-2019/zoe
 
 #### Lab 1
 
-[Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_1/assignment_1.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_1/Skliar_11636785_hw1.pdf)
+[Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_1/assignment_1.pdf) - [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_1/Skliar_11636785_hw1.pdf)
 
 Goal of this assignment is to learn how to implement and train basic neural architectures like MLPs and CNNs for classiﬁcation tasks. The assignment consists of four parts:
 
@@ -18,7 +18,7 @@ Goal of this assignment is to learn how to implement and train basic neural arch
 
 #### Lab 2
 
-[Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_2/assignment_2.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_2/Skliar_11636785_hw2.pdf)
+[Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_2/assignment_2.pdf) - [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_2/Skliar_11636785_hw2.pdf)
 
 Goal of this assignment is to study and implement recurrent neural networks (RNNs).
 The assignment consists of three parts:
@@ -41,7 +41,7 @@ The assignment consists of three parts:
 
 #### Lab 3
 
-[Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_3/assignment_3.pdf) and [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_2/Skliar_11636785_hw3.pdf)
+[Problem statement](https://github.com/askliar/deep_learning/blob/master/assignment_3/assignment_3.pdf) - [Solution](https://github.com/askliar/deep_learning/blob/master/assignment_2/Skliar_11636785_hw3.pdf)
 
 Goal of this assignment is to study and implement Deep Generative Models. The assignment focuses on two most popular models:
 

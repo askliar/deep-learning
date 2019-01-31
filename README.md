@@ -72,5 +72,5 @@ We have implemented both of them in PyTorch as part of this assignment.
 Copyright © 2018 Andrii Skliar.
 
 <p align=“justify”>
-This project is distributed under the <a href=“LICENSE”>MIT license</a>. This was developed as part of the Deep Learning course taught by Efstratios Gavves at the University of Amsterdam. Please follow the <a href=“http://student.uva.nl/en/content/az/plagiarism-and-fraud/plagiarism-and-fraud.html”>UvA regulations governing Fraud and Plagiarism</a> in case you are a student.
+This project is distributed under the <a href=“LICENSE”>MIT license</a>. This was developed as part of the Deep Learning course taught by Efstratios Gavves at the University of Amsterdam. Please follow the <a href="http://student.uva.nl/en/content/az/plagiarism-and-fraud/plagiarism-and-fraud.html"> UvA regulations governing Fraud and Plagiarism </a> in case you are a student.
 </p>

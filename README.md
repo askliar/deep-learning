@@ -51,12 +51,12 @@ Goal of this assignment is to study and implement Deep Generative Models. The as
 We have implemented both of them in PyTorch as part of this assignment. 
 
 <p align="center">
-  <img src="https://cdn.pbrd.co/images/HVbgXvj.png" width="300" /><br />
+  <img src="https://lh3.googleusercontent.com/oyJCiAOKhUTdwhZ6TJFxv69eMYcpqicCZ99QmFcC_HIOzga5_EcHMb7hNWXmBTLwDfGGKRN5UNbMlXR9HyNsUKVGFzfa1cZyqykneGYr206V5ISiCbuLTqC1rSDLw3Q2IuzWVxgt4Jk=w2400" width="300" /><br />
   <b>Figure:</b><i> Data manifold learned by VAE after 40 iterations</i>
 </p>
 
 <p align="center">
-  <img src="https://cdn.pbrd.co/images/HVbhkKF.png" width="300" /><br />
+  <img src="https://lh3.googleusercontent.com/XnKtH4KadlYSzm128Yq__vcKBRMuuEpba-oUOCEoSG7MUEuvlE9kyFHddbvg0z2GCR5U0qWXebQ6FInQh_uepMpwKzx3Gdu9W4mYah7rlIE0M10GWLl1U3s3Q0PUyxhRkEKFIBTRVKU=w2400" width="300" /><br />
   <b>Figure:</b><i> Samples for DCGAN at steps 1, 5, 20 and 40 (left to right, top to bottom)</i>
 </p>
 
